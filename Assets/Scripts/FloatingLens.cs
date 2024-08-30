@@ -11,7 +11,8 @@ public class FloatingLens : MonoBehaviour
     [SerializeField] private Transform holder;
     [SerializeField] private Transform lens;
     [SerializeField] private TextMeshProUGUI lensText;
-    [SerializeField] private bool lensFixed = false;
+    [field: SerializeField] public bool LensFixed { get; set; }
+
     [SerializeField] private Animator animator;
     [SerializeField] private float circleRadius = 150f;
     [SerializeField] private float stepSize = 0.4f;
@@ -103,7 +104,7 @@ public class FloatingLens : MonoBehaviour
 
         lensText.text = currentElementIndex == 0 ? "X" : currentElementIndex.ToString();
 
-        if (!lensFixed)
+        if (!LensFixed)
             lens.position = inputElements[currentElementIndex].transform.position;
 
     }
@@ -122,7 +123,7 @@ public class FloatingLens : MonoBehaviour
             inputElements[i].transform.localPosition = GetPositionFromAngle(angle, circleRadius);
         }
 
-        if (lensFixed)
+        if (LensFixed)
         {
             float angle = rotationCorrection + 45;
             lens.localPosition = GetPositionFromAngle(angle, circleRadius);

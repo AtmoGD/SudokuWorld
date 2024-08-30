@@ -83,6 +83,11 @@ public class GameField : MonoBehaviour
         isActivated = false;
     }
 
+    public void TriggerLensMode()
+    {
+        floatingLens.LensFixed = !floatingLens.LensFixed;
+    }
+
     private void GenerateNewSudoku()
     {
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
