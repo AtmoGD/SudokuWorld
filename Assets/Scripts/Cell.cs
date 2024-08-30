@@ -57,7 +57,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         set
         {
             cellValue = value;
-            gameField.SetCellValue(cellPosition.x, CellPosition.y, value);
+            gameField.SetCellValue(CellPosition.x, CellPosition.y, value);
             UpdateText();
         }
     }
@@ -86,6 +86,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void OnPointerDown(PointerEventData eventData)
     {
         gameField.FloatingLens.PointerDown(this);
+        Debug.Log("PointerDown " + cellPosition);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -120,6 +121,9 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void HighlightError()
     {
+        if (cellType == CellType.FIXED || cellValue == 0)
+            return;
+
         text.color = Color.red;
     }
 

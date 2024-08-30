@@ -14,8 +14,24 @@ public class GameFieldEditor : Editor
 
         if (GUILayout.Button("Generate Field"))
         {
-            gameField.ResetState();
+            gameField.SetIsActivated(false);
             gameField.StartNewGame();
+            // SudokuGenerator.PrintGrid(gameField.Sudoku.puzzle);
+        }
+
+        // Draw the current sudoku solution with seperation
+        if (gameField != null && gameField.Sudoku != null && gameField.Sudoku.solution != null)
+        {
+            GUILayout.Label("Current Sudoku Solution:");
+            for (int i = 0; i < gameField.Sudoku.solution.GetLength(0); i++)
+            {
+                GUILayout.BeginHorizontal();
+                for (int j = 0; j < gameField.Sudoku.solution.GetLength(1); j++)
+                {
+                    GUILayout.Label(gameField.Sudoku.solution[i, j].ToString());
+                }
+                GUILayout.EndHorizontal();
+            }
         }
     }
 }

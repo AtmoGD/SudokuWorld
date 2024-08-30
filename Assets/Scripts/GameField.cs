@@ -30,12 +30,14 @@ public class GameField : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameObject cellPrefab;
     [SerializeField] private Transform cellParent;
+    [SerializeField] private float fieldWidth;
     [SerializeField] private int fieldSize;
     [SerializeField] private int subGridSize;
-    [SerializeField] private List<Rows> field;
+    [SerializeField] private Cell[,] field;
     [SerializeField] private float subGridSpacing;
+    [SerializeField] private float borderSpacing;
     [SerializeField] private float cellSize;
-    [SerializeField] private float cellspacing;
+    // [SerializeField] private float cellspacing;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private FloatingLens floatingLens;
     public FloatingLens FloatingLens { get { return floatingLens; } }
@@ -43,8 +45,15 @@ public class GameField : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool isActivated = false;
     [SerializeField] private SudokuData sudoku;
+    public SudokuData Sudoku { get { return sudoku; } }
 
     private Cell selectedCell;
+
+    private void Awake()
+    {
+        sudoku = new SudokuData();
+        isActivated = false;
+    }
 
     private void Update()
     {
@@ -68,8 +77,6 @@ public class GameField : MonoBehaviour
 
         GenerateField();
 
-        ResetToDefaultValues();
-
         ResetState();
 
         SaveGame();
@@ -81,7 +88,12 @@ public class GameField : MonoBehaviour
 
         sudoku.timeElapsed = 0;
 
-        isActivated = false;
+        SetIsActivated(true);
+    }
+
+    public void SetIsActivated(bool value)
+    {
+        isActivated = value;
     }
 
     public void ResumeGame()
@@ -107,22 +119,21 @@ public class GameField : MonoBehaviour
     private void GenerateNewSudoku()
     {
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
-        sudoku.solution = SudokuGenerator.GeneratePuzzle();
-        sudoku.puzzle = SudokuGenerator.GenerateSolution(randomDifficulty);
-        sudoku.userSolution = sudoku.puzzle.Clone() as int[,];
+        sudoku.puzzle = SudokuGenerator.GeneratePuzzle(randomDifficulty);
+        sudoku.solution = SudokuGenerator.GridSolved.Clone() as int[,];
+        sudoku.userSolution = sudoku.puzzle.Clone() as int[,]; // Copy the puzzle to userSolution
     }
 
     private void GenerateField()
     {
         DeleteCells();
 
-        field = new List<Rows>();
+        CalculateCellSize();
+
+        field = new Cell[fieldSize, fieldSize];
 
         for (int i = 0; i < fieldSize; i++)
         {
-            Rows row = new Rows();
-            row.cells = new List<Cell>();
-
             for (int j = 0; j < fieldSize; j++)
             {
                 GameObject cellObject = Instantiate(cellPrefab, cellParent);
@@ -131,27 +142,30 @@ public class GameField : MonoBehaviour
                 Cell cell = cellObject.GetComponent<Cell>();
                 cell.GameField = this;
                 cell.CellPosition = new Vector2Int(i, j);
-                cell.CellValue = 0;
-                cell.CellType = CellType.EMPTY;
+                cell.CellValue = sudoku.puzzle[i, j];
+                cell.CellType = cell.CellValue == 0 ? CellType.EMPTY : CellType.FIXED;
 
-                row.cells.Add(cell);
+                field[i, j] = cell;
             }
-
-            field.Add(row);
         }
+    }
+
+    public void CalculateCellSize()
+    {
+        cellSize = (fieldWidth - (2 * borderSpacing) - (((fieldSize / subGridSize) - 1) * subGridSpacing)) / fieldSize;
     }
 
     private Vector2 CalculateCellPosition(int i, int j)
     {
-        return new Vector2(CalculatePosition(i), CalculatePosition(j));
+        return new Vector2(CalculatePosition(j), 8 - CalculatePosition(i)); // THIS IS FUCKED UP!
     }
 
     private float CalculatePosition(int i)
     {
-        float position = i * cellSize + i * cellspacing;
+        float position = borderSpacing + i * cellSize;
         position += Mathf.Floor(i / subGridSize) * subGridSpacing;
-        position -= (fieldSize * cellSize + fieldSize * cellspacing) / 2;
-
+        position -= fieldWidth / 2;
+        position += cellSize / 2;
         return position;
     }
 
@@ -173,38 +187,38 @@ public class GameField : MonoBehaviour
     {
         if (field == null) return;
 
-        for (int i = 0; i < field.Count; i++)
+        for (int i = 0; i < fieldSize; i++)
         {
-            for (int j = 0; j < field[i].cells.Count; j++)
+            for (int j = 0; j < fieldSize; j++)
             {
-                Cell cell = field[i].cells[j];
-                cell.CellValue = sudoku.puzzle[i, j];
-                cell.CellType = cell.CellValue == 0 ? CellType.EMPTY : CellType.FIXED;
-                cell.CellPosition = new Vector2Int(i, j);
+                if (field[i, j].CellType != CellType.FIXED)
+                    field[i, j].CellValue = 0;
             }
         }
     }
 
     public void ValidateField()
     {
-        for (int i = 0; i < field.Count; i++)
+        for (int i = 0; i < fieldSize; i++)
         {
-            for (int j = 0; j < field[i].cells.Count; j++)
+            for (int j = 0; j < fieldSize; j++)
             {
-                Cell cell = field[i].cells[j];
-                if (cell.CellValue != sudoku.solution[i, j])
+                if (sudoku.userSolution[i, j] != sudoku.solution[i, j])
+                {
+                    Cell cell = field[i, j];
                     cell.HighlightError();
+                }
             }
         }
     }
 
     public bool IsSolved()
     {
-        for (int i = 0; i < field.Count; i++)
+        for (int i = 0; i < field.Length; i++)
         {
-            for (int j = 0; j < field[i].cells.Count; j++)
+            for (int j = 0; j < field.Length; j++)
             {
-                Cell cell = field[i].cells[j];
+                Cell cell = field[i, j];
                 if (cell.CellValue != sudoku.solution[i, j])
                     return false;
             }

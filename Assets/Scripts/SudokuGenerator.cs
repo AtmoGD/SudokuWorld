@@ -9,21 +9,28 @@ public static class SudokuGenerator
     private const int GridSize = 9;
     private const int SubGridSize = 3;
     private static int[,] gridSolved;
-    private static int[,] grid;
+    public static int[,] GridSolved { get { return gridSolved; } }
+    private static int[,] puzzle;
+    public static int[,] Puzzle { get { return puzzle; } }
     private static System.Random random = new System.Random();
 
-    public static int[,] GeneratePuzzle()
+    public static int[,] GeneratePuzzle(int difficulty)
     {
+        Debug.Log("Generating puzzle with difficulty: " + difficulty);
         gridSolved = new int[GridSize, GridSize];
+        puzzle = new int[GridSize, GridSize];
         FillGrid();
-        return gridSolved;
+        PrintGrid(gridSolved);
+        GenerateSolution(difficulty);
+        PrintGrid(puzzle);
+        return puzzle;
     }
 
     public static int[,] GenerateSolution(int difficulty)
     {
-        grid = gridSolved.Clone() as int[,];
+        puzzle = gridSolved.Clone() as int[,];
         RemoveNumbers(difficulty);
-        return grid;
+        return puzzle;
     }
 
     private static void FillGrid()
@@ -91,9 +98,9 @@ public static class SudokuGenerator
         {
             int row = random.Next(GridSize);
             int col = random.Next(GridSize);
-            if (grid[row, col] != 0)
+            if (puzzle[row, col] != 0)
             {
-                grid[row, col] = 0;
+                puzzle[row, col] = 0;
                 numbersToRemove--;
             }
         }
@@ -114,6 +121,7 @@ public static class SudokuGenerator
 
     public static void PrintGrid(int[,] sudokuGrid)
     {
+        Debug.Log("Sudoku Grid:");
         for (int i = 0; i < GridSize; i++)
         {
             if (i % SubGridSize == 0 && i != 0)

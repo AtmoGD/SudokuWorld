@@ -18,12 +18,12 @@ public class Game : MonoBehaviour
 
     private void Start()
     {
-        activeGameField.StartNewGame();
+        StartNewGame();
     }
 
     public void StartNewGame()
     {
-        activeGameField.StartNewGame();
+        activeGameField?.StartNewGame();
     }
 
     public void SetActiveGameField(GameField gameField)
