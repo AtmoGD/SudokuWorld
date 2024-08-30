@@ -14,12 +14,8 @@ public class GameFieldEditor : Editor
 
         if (GUILayout.Button("Generate Field"))
         {
+            gameField.ResetState();
             gameField.StartNewGame();
-        }
-
-        if (GUILayout.Button("Reset Field"))
-        {
-            gameField.ResetField();
         }
     }
 }

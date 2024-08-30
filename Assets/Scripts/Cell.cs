@@ -28,8 +28,14 @@ public enum CellQuarter
 [Serializable, RequireComponent(typeof(Animator))]
 public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    [SerializeField] private GameField gameField;
     [SerializeField] private TextMeshProUGUI text;
+
+    private GameField gameField;
+    public GameField GameField
+    {
+        get { return gameField; }
+        set { gameField = value; }
+    }
 
     private CellType cellType;
     public CellType CellType
@@ -41,6 +47,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             text.color = cellType == CellType.FIXED ? Color.black : Color.blue;
         }
     }
+
+    // Idee: Eine History für jeden Step mit Timestamp um ein replay im menu anzeigen zu können
 
     private int cellValue;
     public int CellValue
