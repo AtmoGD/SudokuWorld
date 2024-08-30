@@ -11,6 +11,7 @@ public class FloatingLens : MonoBehaviour
     [SerializeField] private Transform holder;
     [SerializeField] private Transform lens;
     [SerializeField] private TextMeshProUGUI lensText;
+    [SerializeField] private bool lensFixed = false;
     [SerializeField] private Animator animator;
     [SerializeField] private float circleRadius = 150f;
     [SerializeField] private float stepSize = 0.4f;
@@ -23,7 +24,6 @@ public class FloatingLens : MonoBehaviour
 
     private void Start()
     {
-        // HideInputElements();
         animator.SetBool("Show", false);
     }
 
@@ -45,8 +45,6 @@ public class FloatingLens : MonoBehaviour
 
     public void PointerUp()
     {
-        // HideInputElements();
-
         if (Time.time - clickStartTime < clickDurationThreshold && currentCell.CellType != CellType.FIXED)
             currentCell.Select();
 
@@ -59,22 +57,6 @@ public class FloatingLens : MonoBehaviour
         animator.SetBool("Show", false);
     }
 
-    // private void ShowInputElements()
-    // {
-    //     for (int i = 0; i < inputElements.Count; i++)
-    //     {
-    //         inputElements[i].SetActive(true);
-    //     }
-    // }
-
-    // private void HideInputElements()
-    // {
-    //     for (int i = 0; i < inputElements.Count; i++)
-    //     {
-    //         inputElements[i].SetActive(false);
-    //     }
-    // }
-
     private void checkPointerPosition()
     {
         if (currentCell && currentCell.CellType != CellType.FIXED)
@@ -84,33 +66,15 @@ public class FloatingLens : MonoBehaviour
             if (distance > distanceThreshold)
             {
                 animator.SetBool("Show", true);
-                // ShowInputElements();
-                ScaleElement(GetNearestElement());
+                GetNearestElement();
                 UpdateLens();
             }
             else
             {
-                // HideInputElements();
                 animator.SetBool("Show", false);
                 currentElementIndex = -1;
             }
         }
-    }
-
-    private void ScaleElement(GameObject nearestElement)
-    {
-        inputElements.ForEach(element =>
-        {
-            if (element == nearestElement)
-            {
-                element.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-                currentElementIndex = inputElements.IndexOf(element);
-            }
-            else
-            {
-                element.transform.localScale = new Vector3(1f, 1f, 1f);
-            }
-        });
     }
 
     private GameObject GetNearestElement()
@@ -126,6 +90,7 @@ public class FloatingLens : MonoBehaviour
             {
                 nearestElement = inputElements[i];
                 nearestDistance = elementDistance;
+                currentElementIndex = i;
             }
         }
 
@@ -134,35 +99,40 @@ public class FloatingLens : MonoBehaviour
 
     private void UpdateLens()
     {
-        if (currentElementIndex == -1)
-        {
-            lens.localScale = new Vector3(0, 0, 0);
-        }
-        else
-        {
-            lensText.text = currentElementIndex == 0 ? "X" : currentElementIndex.ToString();
+        if (currentElementIndex == -1) return;
+
+        lensText.text = currentElementIndex == 0 ? "X" : currentElementIndex.ToString();
+
+        if (!lensFixed)
             lens.position = inputElements[currentElementIndex].transform.position;
 
-        }
     }
 
     private void UpdateElementPosition()
     {
-        // the holder should be rotated so its pointing to the center of the field (cell[4,4])
         Vector2 startPostion = new Vector2(4, 4);
         Vector2 result = startPostion - currentCell.CellPosition;
         float rotationCorrection = Vector2.SignedAngle(Vector2.up, result);
-        //Add 45 to correct the rotation of the holder
         rotationCorrection -= 45;
         holder.rotation = Quaternion.Euler(0, 0, rotationCorrection);
 
-        // PLace the elements based on the result vector
         for (int i = 0; i < inputElements.Count; i++)
         {
             float angle = i * -stepSize + 90 + rotationCorrection;
-            float x = circleRadius * Mathf.Cos(angle * Mathf.Deg2Rad);
-            float y = circleRadius * Mathf.Sin(angle * Mathf.Deg2Rad);
-            inputElements[i].transform.localPosition = new Vector2(x, y);
+            inputElements[i].transform.localPosition = GetPositionFromAngle(angle, circleRadius);
         }
+
+        if (lensFixed)
+        {
+            float angle = rotationCorrection + 45;
+            lens.localPosition = GetPositionFromAngle(angle, circleRadius);
+        }
+    }
+
+    private Vector2 GetPositionFromAngle(float angle, float radius)
+    {
+        float x = radius * Mathf.Cos(angle * Mathf.Deg2Rad);
+        float y = radius * Mathf.Sin(angle * Mathf.Deg2Rad);
+        return new Vector2(x, y);
     }
 }

@@ -30,8 +30,6 @@ public class GameField : MonoBehaviour
     [Header("References")]
     [SerializeField] private List<Rows> field;
     [SerializeField] private TextMeshProUGUI timerText;
-    [SerializeField] private FloatingInput floatingInput;
-    public FloatingInput FloatingInput { get { return floatingInput; } }
     [SerializeField] private FloatingLens floatingLens;
     public FloatingLens FloatingLens { get { return floatingLens; } }
 
