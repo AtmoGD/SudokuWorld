@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.UIElements;
 
 [Serializable]
 public enum CellType
@@ -44,23 +45,14 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         set
         {
             cellType = value;
-            text.color = cellType == CellType.FIXED ? Color.black : Color.blue;
+            SetColor();
         }
     }
 
     // Idee: Eine History für jeden Step mit Timestamp um ein replay im menu anzeigen zu können
 
     private int cellValue;
-    public int CellValue
-    {
-        get { return cellValue; }
-        set
-        {
-            cellValue = value;
-            gameField.SetCellValue(CellPosition.x, CellPosition.y, value);
-            UpdateText();
-        }
-    }
+    public int CellValue { get { return cellValue; } set { SetValue(value); } }
 
     private Vector2Int cellPosition;
     public Vector2Int CellPosition
@@ -83,8 +75,14 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         Animator = GetComponent<Animator>();
     }
 
+    private void Start()
+    {
+        SetColor();
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
+        SetColor();
         gameField.FloatingLens.PointerDown(this);
         Debug.Log("PointerDown " + cellPosition);
     }
@@ -105,26 +103,64 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         gameField.SelectCell(this);
 
         isSelected = true;
-        text.color = Color.green;
+        text.color = Game.Manager.Theme.CellSelectedTextColor;
     }
 
     public void Deselect()
     {
+        // gameField.SelectCell(null);
+
         isSelected = false;
-        text.color = cellType == CellType.FIXED ? Color.black : Color.blue;
+        SetColor();
     }
 
     public void UpdateText()
     {
-        text.text = cellValue == 0 ? "" : cellValue.ToString();
+        text.text = CellValue == 0 ? "" : CellValue.ToString();
+    }
+
+    public void SetValue(int value)
+    {
+        cellValue = value;
+        gameField.SetCellValue(CellPosition.x, CellPosition.y, value);
+        UpdateText();
+    }
+
+    public void SetColor()
+    {
+        switch (cellType)
+        {
+            case CellType.FIXED:
+                text.color = Game.Manager.Theme.CellFixedTextColor;
+                Debug.Log("Fixed " + Game.Manager.Theme.CellFixedTextColor);
+                break;
+            case CellType.USER:
+                text.color = Game.Manager.Theme.CellUserTextColor;
+                Debug.Log("User");
+                break;
+            case CellType.EMPTY:
+                text.color = Game.Manager.Theme.CellFixedTextColor;
+                Debug.Log("Empty");
+                break;
+        }
     }
 
     public void HighlightError()
     {
-        if (cellType == CellType.FIXED || cellValue == 0)
+        if (cellType == CellType.FIXED || CellValue == 0)
             return;
 
-        text.color = Color.red;
+        text.color = Game.Manager.Theme.CellErrorTextColor;
+    }
+
+    public void Highlight()
+    {
+        Animator.SetBool("Highlighted", true);
+    }
+
+    public void Unhighlight()
+    {
+        Animator.SetBool("Highlighted", false);
     }
 
     public CellQuarter GetQuarter()

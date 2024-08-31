@@ -46,11 +46,14 @@ public class FloatingLens : MonoBehaviour
 
     public void PointerUp()
     {
-        if (Time.time - clickStartTime < clickDurationThreshold && currentCell.CellType != CellType.FIXED)
+        if (Time.time - clickStartTime < clickDurationThreshold)
             currentCell.Select();
 
         if (currentElementIndex != -1)
+        {
+            currentCell.CellType = CellType.USER;
             currentCell.CellValue = currentElementIndex;
+        }
 
         currentElementIndex = -1;
         currentCell = null;

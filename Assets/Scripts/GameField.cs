@@ -37,7 +37,6 @@ public class GameField : MonoBehaviour
     [SerializeField] private float subGridSpacing;
     [SerializeField] private float borderSpacing;
     [SerializeField] private float cellSize;
-    // [SerializeField] private float cellspacing;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private FloatingLens floatingLens;
     public FloatingLens FloatingLens { get { return floatingLens; } }
@@ -229,8 +228,31 @@ public class GameField : MonoBehaviour
 
     public void SelectCell(Cell cell)
     {
-        selectedCell?.Deselect();
+        if (selectedCell != null)
+        {
+            selectedCell.Deselect();
+            foreach (Cell c in field)
+            {
+                c.Unhighlight();
+            }
+        }
+
         selectedCell = cell;
+
+        if (selectedCell != null)
+        {
+            HighlightRowAndColumn(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
+        }
+
+    }
+
+    public void HighlightRowAndColumn(int x, int y)
+    {
+        for (int i = 0; i < fieldSize; i++)
+        {
+            field[x, i].Highlight();
+            field[i, y].Highlight();
+        }
     }
 
     public void SetCellValue(int posX, int posY, int value)

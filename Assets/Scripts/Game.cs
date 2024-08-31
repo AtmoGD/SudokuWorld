@@ -1,18 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-    public static Game Manager { get; private set; }
+    private static Game manager;
+    public static Game Manager
+    {
+        get
+        {
+            if (manager == null)
+                manager = FindObjectOfType<Game>();
+
+            return manager;
+        }
+    }
     [SerializeField] private GameField activeGameField;
-    private Vector2 lastTouchPosition;
+    [SerializeField] private Theme theme;
+    public Theme Theme { get { return theme; } }
 
     private void Awake()
     {
         if (Manager == null)
-            Manager = this;
-        else
+            manager = this;
+        else if (Manager != this)
             Destroy(gameObject);
     }
 
@@ -23,7 +35,8 @@ public class Game : MonoBehaviour
 
     public void StartNewGame()
     {
-        activeGameField?.StartNewGame();
+        if (activeGameField != null)
+            activeGameField.StartNewGame();
     }
 
     public void SetActiveGameField(GameField gameField)
