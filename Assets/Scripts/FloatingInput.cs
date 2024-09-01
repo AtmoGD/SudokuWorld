@@ -17,9 +17,11 @@ public class FloatingInput : MonoBehaviour
     [SerializeField] private float circleRadius = 150f;
     [SerializeField] private float stepSize = 0.4f;
     [SerializeField] private float distanceThreshold = 50f;
+    [SerializeField] private float clickTimeThreshold = 0.5f;
 
     private Cell currentCell = null;
     private Vector2 inputDirection;
+    private float clickStartTime;
     private int currentElementIndex = -1;
 
     private void Start()
@@ -38,15 +40,23 @@ public class FloatingInput : MonoBehaviour
     {
         currentCell = cell;
         transform.position = currentCell.transform.position;
-        currentCell.Select();
+        clickStartTime = Time.time;
+
+        // if (!currentCell.IsSelected)
+        currentCell.SafeSelect();
     }
 
     public void PointerUp()
     {
+        // if (Time.time - clickStartTime < clickTimeThreshold)
+        // {
+        //     currentCell.SafeSelect();
+        // }
+        // else
         if (currentElementIndex != -1)
         {
             currentCell.CellType = CellType.USER;
-            currentCell.CellValue = currentElementIndex;
+            currentCell.SetValue(currentElementIndex, true);
         }
 
         currentElementIndex = -1;
@@ -67,6 +77,7 @@ public class FloatingInput : MonoBehaviour
 
                 if (inputDirection == Vector2.zero)
                 {
+                    currentCell.Select();
                     inputDirection = (Vector2)Input.mousePosition - (Vector2)currentCell.transform.position;
                     UpdateElementPosition();
                 }

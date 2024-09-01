@@ -33,6 +33,9 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     [SerializeField] private Animator cellAnimator;
     [SerializeField] private Animator backgroundAnimator;
     [SerializeField] private List<Animator> valueAnimators;
+    [SerializeField] private float selectTimeout = 0.5f;
+
+    private float lastSelectTime = 0;
 
     private GameField gameField;
     public GameField GameField
@@ -56,7 +59,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     // Idee: Eine History für jeden Step mit Timestamp um ein replay im menu anzeigen zu können
 
     private int cellValue;
-    public int CellValue { get { return cellValue; } set { SetValue(value); } }
+    public int CellValue { get { return cellValue; } }
 
     private Vector2Int cellPosition;
     public Vector2Int CellPosition
@@ -82,17 +85,21 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         gameField.FloatingLens.PointerUp();
     }
 
-    public void Select()
+
+    public void SafeSelect()
     {
         if (isSelected)
-        {
             SelfDeselct();
-            return;
-        }
+        else
+            Select();
+    }
 
+    public void Select()
+    {
         gameField.SelectCell(this);
 
         isSelected = true;
+        lastSelectTime = Time.time;
         cellAnimator.SetBool("Selected", true);
     }
 
@@ -115,10 +122,12 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             text.text = newText;
     }
 
-    public void SetValue(int value)
+    public void SetValue(int value, bool highlight = false)
     {
         cellValue = value;
         gameField.SetCellValue(CellPosition.x, CellPosition.y, value);
+        if (highlight)
+            gameField.HighlightValue(value);
         UnhighlightError();
         UpdateText();
     }

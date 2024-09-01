@@ -61,6 +61,7 @@ MonoBehaviour:
   valueAnimators:
   - {fileID: 6226571869307973006}
   - {fileID: 2628973094710005028}
+  selectTimeout: 0.75
 --- !u!95 &777917020252142944
 Animator:
   serializedVersion: 5
@@ -485,7 +486,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
+    rgba: 4280558628
   m_fontColor: {r: 0.14150941, g: 0.14150941, b: 0.14150941, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3

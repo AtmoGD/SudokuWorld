@@ -47,6 +47,7 @@ public class GameField : MonoBehaviour
     public SudokuData Sudoku { get { return sudoku; } }
 
     private Cell selectedCell;
+    public Cell SelectedCell { get { return selectedCell; } }
 
     private void Awake()
     {
@@ -142,7 +143,7 @@ public class GameField : MonoBehaviour
                 Cell cell = cellObject.GetComponent<Cell>();
                 cell.GameField = this;
                 cell.CellPosition = new Vector2Int(i, j);
-                cell.CellValue = sudoku.puzzle[i, j];
+                cell.SetValue(sudoku.puzzle[i, j]);
                 cell.CellType = cell.CellValue == 0 ? CellType.EMPTY : CellType.FIXED;
 
                 field[i, j] = cell;
@@ -192,7 +193,7 @@ public class GameField : MonoBehaviour
             for (int j = 0; j < fieldSize; j++)
             {
                 if (field[i, j].CellType != CellType.FIXED)
-                    field[i, j].CellValue = 0;
+                    field[i, j].SetValue(0);
             }
         }
     }
