@@ -118,7 +118,8 @@ public class GameField : MonoBehaviour
     private void GenerateNewSudoku()
     {
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
-        sudoku.puzzle = SudokuGenerator.GeneratePuzzle(randomDifficulty);
+        SudokuGenerator.GeneratePuzzle(randomDifficulty);
+        sudoku.puzzle = SudokuGenerator.Puzzle.Clone() as int[,];
         sudoku.solution = SudokuGenerator.GridSolved.Clone() as int[,];
         sudoku.userSolution = sudoku.puzzle.Clone() as int[,]; // Copy the puzzle to userSolution
     }
@@ -231,27 +232,73 @@ public class GameField : MonoBehaviour
         if (selectedCell != null)
         {
             selectedCell.Deselect();
-            foreach (Cell c in field)
-            {
-                c.Unhighlight();
-            }
+            UnhighlightAll();
         }
 
         selectedCell = cell;
 
         if (selectedCell != null)
         {
-            HighlightRowAndColumn(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
-        }
+            if (selectedCell.CellType != CellType.FIXED)
+            {
+                HighlightRowAndColumn(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
+                HighlightSubGrid(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
+            }
 
+            HighlightValue(selectedCell.CellValue);
+        }
+    }
+
+    void UnhighlightAll()
+    {
+        foreach (Cell c in field)
+        {
+            c.UnhighlightBackground();
+            c.UnhighlightValue();
+        }
+    }
+
+    public void SelfDeselectedCell(Cell cell)
+    {
+        if (selectedCell == cell)
+        {
+            selectedCell = null;
+            UnhighlightAll();
+        }
     }
 
     public void HighlightRowAndColumn(int x, int y)
     {
         for (int i = 0; i < fieldSize; i++)
         {
-            field[x, i].Highlight();
-            field[i, y].Highlight();
+            field[x, i].HighlightBackground();
+            field[i, y].HighlightBackground();
+        }
+    }
+
+    public void HighlightSubGrid(int x, int y)
+    {
+        int startX = x - x % subGridSize;
+        int startY = y - y % subGridSize;
+
+        for (int i = 0; i < subGridSize; i++)
+        {
+            for (int j = 0; j < subGridSize; j++)
+            {
+                field[startX + i, startY + j].HighlightBackground();
+            }
+        }
+    }
+
+    public void HighlightValue(int value)
+    {
+        for (int i = 0; i < fieldSize; i++)
+        {
+            for (int j = 0; j < fieldSize; j++)
+            {
+                if (field[i, j].CellValue == value)
+                    field[i, j].HighlightValue();
+            }
         }
     }
 

@@ -3,6 +3,7 @@ using System;
 using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 [Serializable]
 public enum CellType
@@ -26,10 +27,12 @@ public enum CellQuarter
     BOTTOM_RIGHT
 }
 
-[Serializable, RequireComponent(typeof(Animator))]
 public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private TextMeshProUGUI[] texts;
+    [SerializeField] private Animator cellAnimator;
+    [SerializeField] private Animator backgroundAnimator;
+    [SerializeField] private List<Animator> valueAnimators;
 
     private GameField gameField;
     public GameField GameField
@@ -45,7 +48,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         set
         {
             cellType = value;
-            SetColor();
+            if (cellAnimator != null)
+                cellAnimator.SetBool("Fixed", cellType == CellType.FIXED);
         }
     }
 
@@ -68,23 +72,9 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         set { isSelected = value; }
     }
 
-    public Animator Animator { get; private set; }
-
-    private void Awake()
-    {
-        Animator = GetComponent<Animator>();
-    }
-
-    private void Start()
-    {
-        SetColor();
-    }
-
     public void OnPointerDown(PointerEventData eventData)
     {
-        SetColor();
         gameField.FloatingLens.PointerDown(this);
-        Debug.Log("PointerDown " + cellPosition);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -96,71 +86,93 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         if (isSelected)
         {
-            Deselect();
+            SelfDeselct();
             return;
         }
 
         gameField.SelectCell(this);
 
         isSelected = true;
-        text.color = Game.Manager.Theme.CellSelectedTextColor;
+        cellAnimator.SetBool("Selected", true);
     }
 
     public void Deselect()
     {
-        // gameField.SelectCell(null);
-
         isSelected = false;
-        SetColor();
+        cellAnimator.SetBool("Selected", false);
+    }
+
+    public void SelfDeselct()
+    {
+        Deselect();
+        gameField.SelfDeselectedCell(this);
     }
 
     public void UpdateText()
     {
-        text.text = CellValue == 0 ? "" : CellValue.ToString();
+        string newText = CellValue == 0 ? "" : CellValue.ToString();
+        foreach (TextMeshProUGUI text in texts)
+            text.text = newText;
     }
 
     public void SetValue(int value)
     {
         cellValue = value;
         gameField.SetCellValue(CellPosition.x, CellPosition.y, value);
+        UnhighlightError();
         UpdateText();
     }
 
-    public void SetColor()
+    public void HighlightBackground()
     {
-        switch (cellType)
+        backgroundAnimator.SetBool("HighlightedBackground", true);
+    }
+
+    public void UnhighlightBackground()
+    {
+        backgroundAnimator.SetBool("HighlightedBackground", false);
+    }
+
+    public void HighlightValue()
+    {
+        valueAnimators.ForEach((value) =>
         {
-            case CellType.FIXED:
-                text.color = Game.Manager.Theme.CellFixedTextColor;
-                Debug.Log("Fixed " + Game.Manager.Theme.CellFixedTextColor);
-                break;
-            case CellType.USER:
-                text.color = Game.Manager.Theme.CellUserTextColor;
-                Debug.Log("User");
-                break;
-            case CellType.EMPTY:
-                text.color = Game.Manager.Theme.CellFixedTextColor;
-                Debug.Log("Empty");
-                break;
-        }
+            value.SetBool("HighlightedValue", true);
+        });
+    }
+
+    public void UnhighlightValue()
+    {
+        valueAnimators.ForEach((value) =>
+        {
+            value.SetBool("HighlightedValue", false);
+        });
     }
 
     public void HighlightError()
     {
-        if (cellType == CellType.FIXED || CellValue == 0)
-            return;
-
-        text.color = Game.Manager.Theme.CellErrorTextColor;
+        valueAnimators.ForEach((value) =>
+        {
+            value.SetBool("ErrorValue", true);
+        });
     }
 
-    public void Highlight()
+    public void UnhighlightError()
     {
-        Animator.SetBool("Highlighted", true);
+        valueAnimators.ForEach((value) =>
+        {
+            value.SetBool("ErrorValue", false);
+        });
     }
 
-    public void Unhighlight()
+    public void VanishCell()
     {
-        Animator.SetBool("Highlighted", false);
+        cellAnimator.SetBool("Vanish", true);
+    }
+
+    public void UnvanishCell()
+    {
+        cellAnimator.SetBool("Vanish", false);
     }
 
     public CellQuarter GetQuarter()

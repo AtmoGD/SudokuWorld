@@ -12,18 +12,19 @@ public static class SudokuGenerator
     public static int[,] GridSolved { get { return gridSolved; } }
     private static int[,] puzzle;
     public static int[,] Puzzle { get { return puzzle; } }
-    private static System.Random random = new System.Random();
+    private static readonly System.Random random = new();
 
-    public static int[,] GeneratePuzzle(int difficulty)
+    public static void GeneratePuzzle(int difficulty)
     {
-        Debug.Log("Generating puzzle with difficulty: " + difficulty);
+        InitArrays();
+        FillGrid();
+        GenerateSolution(difficulty);
+    }
+
+    private static void InitArrays()
+    {
         gridSolved = new int[GridSize, GridSize];
         puzzle = new int[GridSize, GridSize];
-        FillGrid();
-        PrintGrid(gridSolved);
-        GenerateSolution(difficulty);
-        PrintGrid(puzzle);
-        return puzzle;
     }
 
     public static int[,] GenerateSolution(int difficulty)
