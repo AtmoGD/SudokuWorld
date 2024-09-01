@@ -38,8 +38,8 @@ public class GameField : MonoBehaviour
     [SerializeField] private float borderSpacing;
     [SerializeField] private float cellSize;
     [SerializeField] private TextMeshProUGUI timerText;
-    [SerializeField] private FloatingLens floatingLens;
-    public FloatingLens FloatingLens { get { return floatingLens; } }
+    [SerializeField] private FloatingInput floatingLens;
+    public FloatingInput FloatingLens { get { return floatingLens; } }
 
     [Header("Debug")]
     [SerializeField] private bool isActivated = false;
