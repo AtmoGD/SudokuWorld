@@ -32,6 +32,19 @@ public class GameFieldEditor : Editor
                 }
                 GUILayout.EndHorizontal();
             }
+
+            GUILayout.Space(20);
+
+            GUILayout.Label("Current User Solution:");
+            for (int i = 0; i < gameField.Sudoku.userSolution.GetLength(0); i++)
+            {
+                GUILayout.BeginHorizontal();
+                for (int j = 0; j < gameField.Sudoku.userSolution.GetLength(1); j++)
+                {
+                    GUILayout.Label(gameField.Sudoku.userSolution[i, j].ToString());
+                }
+                GUILayout.EndHorizontal();
+            }
         }
     }
 }

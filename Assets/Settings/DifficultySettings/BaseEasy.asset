@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51ad78519dfdc294292d2335817709d1, type: 3}
   m_Name: BaseEasy
   m_EditorClassIdentifier: 
-  difficultyName: Easy peasy lemon squeezy
+  displayName: Easy peasy lemon squeezy
   range: {x: 50, y: 70}

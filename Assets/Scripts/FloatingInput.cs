@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 public class FloatingInput : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> inputElements = new List<GameObject>();
+    [SerializeField] private GameField gameField;
+    [SerializeField] private List<GameObject> inputElements = new();
     [SerializeField] private Transform holder;
     [SerializeField] private Transform lens;
     [SerializeField] private TextMeshProUGUI lensText;
@@ -17,12 +18,13 @@ public class FloatingInput : MonoBehaviour
     [SerializeField] private float circleRadius = 150f;
     [SerializeField] private float stepSize = 0.4f;
     [SerializeField] private float distanceThreshold = 50f;
-    [SerializeField] private float clickTimeThreshold = 0.5f;
+    [SerializeField] private float inputTimeout = 0.5f;
 
     private Cell currentCell = null;
     private Vector2 inputDirection;
-    private float clickStartTime;
     private int currentElementIndex = -1;
+    private float lastInputTime;
+    private Cell lastSelectedCell;
 
     private void Start()
     {
@@ -33,39 +35,36 @@ public class FloatingInput : MonoBehaviour
     {
         if (!currentCell) return;
 
-        checkPointerPosition();
+        CheckPointerPosition();
     }
 
     public void PointerDown(Cell cell)
     {
         currentCell = cell;
         transform.position = currentCell.transform.position;
-        clickStartTime = Time.time;
-
-        // if (!currentCell.IsSelected)
-        currentCell.SafeSelect();
+        lastSelectedCell = gameField.SelectedCell;
+        gameField.SelectCell(currentCell);
+        lastInputTime = Time.time;
     }
 
     public void PointerUp()
     {
-        // if (Time.time - clickStartTime < clickTimeThreshold)
-        // {
-        //     currentCell.SafeSelect();
-        // }
-        // else
-        if (currentElementIndex != -1)
+        if (Time.time - lastInputTime < inputTimeout && lastSelectedCell == currentCell)
         {
-            currentCell.CellType = CellType.USER;
-            currentCell.SetValue(currentElementIndex, true);
+            gameField.DeselectCell();
+            currentCell = null;
+            currentElementIndex = -1;
         }
+
+        if (currentElementIndex != -1)
+            gameField.SetCellValue(currentCell, currentElementIndex);
 
         currentElementIndex = -1;
         currentCell = null;
-
         animator.SetBool("Show", false);
     }
 
-    private void checkPointerPosition()
+    private void CheckPointerPosition()
     {
         if (currentCell && currentCell.CellType != CellType.FIXED)
         {
@@ -77,7 +76,6 @@ public class FloatingInput : MonoBehaviour
 
                 if (inputDirection == Vector2.zero)
                 {
-                    currentCell.Select();
                     inputDirection = (Vector2)Input.mousePosition - (Vector2)currentCell.transform.position;
                     UpdateElementPosition();
                 }
