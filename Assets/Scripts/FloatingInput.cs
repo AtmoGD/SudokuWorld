@@ -18,6 +18,7 @@ public class FloatingInput : MonoBehaviour
     [SerializeField] private float circleRadius = 150f;
     [SerializeField] private float stepSize = 0.4f;
     [SerializeField] private float distanceThreshold = 50f;
+    private float resultingThreshold { get { return distanceThreshold * Screen.width / 1800; } }
     [SerializeField] private float inputTimeout = 0.5f;
 
     private Cell currentCell = null;
@@ -70,7 +71,7 @@ public class FloatingInput : MonoBehaviour
         {
             float distance = Vector2.Distance(Input.mousePosition, currentCell.transform.position);
 
-            if (distance > distanceThreshold)
+            if (distance > resultingThreshold)
             {
                 animator.SetBool("Show", true);
 

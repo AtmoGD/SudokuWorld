@@ -27,12 +27,13 @@ public enum CellSubgrid
     BOTTOM_RIGHT
 }
 
+[Serializable]
 public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     [SerializeField] private TextMeshProUGUI[] texts;
     [SerializeField] private Animator cellAnimator;
-    [SerializeField] private Animator backgroundAnimator;
-    [SerializeField] private List<Animator> valueAnimators;
+    // [SerializeField] private Animator backgroundAnimator;
+    // [SerializeField] private List<Animator> valueAnimators;
 
     private GameField gameField;
     public GameField GameField { get { return gameField; } }
@@ -46,12 +47,6 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private Vector2Int cellPosition;
     public Vector2Int CellPosition { get { return cellPosition; } }
 
-    private bool isSelected;
-    public bool IsSelected
-    {
-        get { return isSelected; }
-    }
-
     public void OnPointerDown(PointerEventData eventData)
     {
         gameField.FloatingInput.PointerDown(this);
@@ -60,25 +55,6 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void OnPointerUp(PointerEventData eventData)
     {
         gameField.FloatingInput.PointerUp();
-    }
-
-    public void Select()
-    {
-        isSelected = true;
-        cellAnimator.SetBool("Selected", true);
-    }
-
-    public void Deselect()
-    {
-        isSelected = false;
-        cellAnimator.SetBool("Selected", false);
-    }
-
-    public void UpdateText()
-    {
-        string newText = CellValue == 0 ? "" : CellValue.ToString();
-        foreach (TextMeshProUGUI text in texts)
-            text.text = newText;
     }
 
     public void SetValue(int value)
@@ -94,7 +70,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         cellType = type;
 
         if (cellAnimator != null)
-            cellAnimator.SetBool("Fixed", cellType == CellType.FIXED);
+            cellAnimator.SetBool("IsFixed", cellType == CellType.FIXED);
     }
 
     public void SetPosition(Vector2Int position)
@@ -107,59 +83,47 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         gameField = field;
     }
 
+    public void Select()
+    {
+        cellAnimator.SetBool("IsSelected", true);
+    }
+
+    public void Deselect()
+    {
+        cellAnimator.SetBool("IsSelected", false);
+    }
+
     public void HighlightBackground()
     {
-        backgroundAnimator.SetBool("HighlightedBackground", true);
+        cellAnimator.SetBool("IsHighlighted", true);
     }
 
     public void UnhighlightBackground()
     {
-        backgroundAnimator.SetBool("HighlightedBackground", false);
-    }
-
-    public void HighlightValue()
-    {
-        valueAnimators.ForEach((value) =>
-        {
-            value.SetBool("HighlightedValue", true);
-        });
-    }
-
-    public void UnhighlightValue()
-    {
-        valueAnimators.ForEach((value) =>
-        {
-            value.SetBool("HighlightedValue", false);
-        });
+        cellAnimator.SetBool("IsHighlighted", false);
     }
 
     public void HighlightError()
     {
-        valueAnimators.ForEach((value) =>
-        {
-            value.SetBool("ErrorValue", true);
-        });
+        cellAnimator.SetBool("IsError", true);
     }
 
     public void UnhighlightError()
     {
-        valueAnimators.ForEach((value) =>
-        {
-            value.SetBool("ErrorValue", false);
-        });
+        cellAnimator.SetBool("IsError", false);
     }
 
     public void VanishCell()
     {
-        cellAnimator.SetBool("Vanish", true);
+        cellAnimator.SetBool("IsVanished", true);
     }
 
     public void UnvanishCell()
     {
-        cellAnimator.SetBool("Vanish", false);
+        cellAnimator.SetBool("IsVanished", false);
     }
 
-    public CellSubgrid GetCellSubgrid()
+    private CellSubgrid GetCellSubgrid()
     {
         if (cellPosition.x < 3)
         {
@@ -188,5 +152,12 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             else
                 return CellSubgrid.BOTTOM_RIGHT;
         }
+    }
+
+    private void UpdateText()
+    {
+        string newText = CellValue == 0 ? "" : CellValue.ToString();
+        foreach (TextMeshProUGUI text in texts)
+            text.text = newText;
     }
 }

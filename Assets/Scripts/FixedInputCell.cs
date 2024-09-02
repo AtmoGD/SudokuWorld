@@ -22,10 +22,6 @@ public class FixedInputCell : MonoBehaviour
 
     public void Select()
     {
-        GameField gameField = fixedInput.GetGameField();
-        if (gameField.SelectedCell && gameField.SelectedCell.CellType != CellType.FIXED)
-            gameField.SetCellValue(gameField.SelectedCell, value);
-
         if (isSelected)
         {
             if (Time.time - lastSelectTime > selectTimeout)

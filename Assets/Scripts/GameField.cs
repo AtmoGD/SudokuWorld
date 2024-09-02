@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.Events;
+using JetBrains.Annotations;
+using System.Linq;
 
 [Serializable]
 public class Rows
@@ -34,6 +36,20 @@ public class SudokuData
     }
 }
 
+public enum InputType
+{
+    FLOATING,
+    FIXED
+}
+
+
+[Serializable]
+public class HighlightData
+{
+    public List<Cell> cells;
+    public InputType inputType;
+}
+
 [Serializable]
 public class FieldCommand
 {
@@ -61,6 +77,9 @@ public class GameField : MonoBehaviour
     [SerializeField] private float subGridSpacing;
     [SerializeField] private float borderSpacing;
     [SerializeField] private float cellSize;
+    [SerializeField] private bool highlightRowsAndColumns;
+    [SerializeField] private bool highlightSubGrids;
+    [SerializeField] private bool highlightValues;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI headlineText;
     [SerializeField] private FloatingInput floatingInput;
@@ -72,9 +91,10 @@ public class GameField : MonoBehaviour
     [SerializeField] private bool isActivated = false;
     [SerializeField] private SudokuData sudoku;
     public SudokuData Sudoku { get { return sudoku; } }
-
+    [SerializeField] private List<HighlightData> highlightDatas = new List<HighlightData>();
     private Cell selectedCell;
     public Cell SelectedCell { get { return selectedCell; } }
+
 
     private void Awake()
     {
@@ -152,6 +172,21 @@ public class GameField : MonoBehaviour
     public void TriggerLensMode()
     {
         floatingInput.LensFixed = !floatingInput.LensFixed;
+    }
+
+    public void TriggerHighlightRowsAndColumns()
+    {
+        highlightRowsAndColumns = !highlightRowsAndColumns;
+    }
+
+    public void TriggerHighlightSubGrids()
+    {
+        highlightSubGrids = !highlightSubGrids;
+    }
+
+    public void TriggerHighlightValues()
+    {
+        highlightValues = !highlightValues;
     }
 
     private void GenerateNewSudoku()
@@ -284,11 +319,10 @@ public class GameField : MonoBehaviour
     {
         if (selectedCell == cell) return;
 
-        if (selectedCell != null)
+        if (selectedCell != null && selectedCell != cell)
         {
             selectedCell.Deselect();
-            FixedInput.OverrideValue(0);
-            ClearHighlightBackground();
+            ClearHighlighByType(InputType.FLOATING);
         }
 
         selectedCell = cell;
@@ -297,13 +331,14 @@ public class GameField : MonoBehaviour
         {
             selectedCell.Select();
 
-            if (selectedCell.CellType != CellType.FIXED)
-            {
-                HighlightRowAndColumn(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
-                HighlightSubGrid(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
-            }
-            FixedInput.OverrideValue(selectedCell.CellValue);
-            HighlightValue(selectedCell.CellValue);
+            int x = selectedCell.CellPosition.x;
+            int y = selectedCell.CellPosition.y;
+
+            if (highlightRowsAndColumns)
+                AddHighlightData(new HighlightData { cells = GetRowAndColumnCells(x, y), inputType = InputType.FLOATING });
+
+            if (highlightSubGrids)
+                AddHighlightData(new HighlightData { cells = GetSubgridCells(x, y), inputType = InputType.FLOATING });
         }
     }
 
@@ -311,11 +346,11 @@ public class GameField : MonoBehaviour
     {
         if (selectedCell == null) return;
 
+        ClearHighlighByType(InputType.FLOATING);
+
         selectedCell.Deselect();
+
         selectedCell = null;
-        FixedInput.OverrideValue(0);
-        ClearHighlightBackground();
-        ClearHighlightValue();
     }
 
     public void SetCellValue(Cell cell, int value)
@@ -332,54 +367,113 @@ public class GameField : MonoBehaviour
         cell.SetValue(value);
 
         if (userInput)
-        {
             AddCommand(new FieldCommand { posX = posX, posY = posY, value = value, time = sudoku.timeElapsed });
-            HighlightValue(value);
-            FixedInput.SelectValue(value);
-        }
 
         OnSetCellValue?.Invoke();
     }
 
-    public void HighlightRowAndColumn(int x, int y)
+    public void HighlightValues(int value)
     {
-        for (int i = 0; i < fieldSize; i++)
-        {
-            field[x, i].HighlightBackground();
-            field[i, y].HighlightBackground();
-        }
+        ClearHighlighByType(InputType.FIXED);
+
+        if (value != 0 && highlightValues)
+            AddHighlightData(new HighlightData { cells = GetValueCells(value), inputType = InputType.FIXED });
     }
 
-    public void HighlightSubGrid(int x, int y)
+    public void AddHighlightData(HighlightData data)
     {
+        highlightDatas.Add(data);
+        UpdateHighlights();
+    }
+
+    public void UpdateHighlights()
+    {
+        highlightDatas.ForEach(x =>
+        {
+            foreach (Cell cell in x.cells)
+            {
+                if (x.inputType == InputType.FLOATING)
+                    cell.HighlightBackground();
+                else
+                    cell.Select();
+            }
+        });
+    }
+
+    public void ClearHighlighByType(InputType inputType)
+    {
+        highlightDatas.ForEach(x =>
+        {
+            if (x.inputType == inputType)
+            {
+                foreach (Cell cell in x.cells)
+                {
+                    if (inputType == InputType.FLOATING)
+                        cell.UnhighlightBackground();
+                    else
+                        cell.Deselect();
+                }
+            }
+        });
+
+        highlightDatas.RemoveAll(x => x.inputType == inputType);
+        UpdateHighlights();
+    }
+
+    public void ClearHighlightAll()
+    {
+        highlightDatas.ForEach(x =>
+        {
+            foreach (Cell cell in x.cells)
+            {
+                cell.UnhighlightBackground();
+                cell.Deselect();
+            }
+        });
+
+        highlightDatas.Clear();
+    }
+
+    public List<Cell> GetRowAndColumnCells(int x, int y)
+    {
+        List<Cell> cells = new List<Cell>();
+        for (int i = 0; i < fieldSize; i++)
+        {
+            cells.Add(field[x, i]);
+            cells.Add(field[i, y]);
+        }
+        return cells;
+    }
+
+    public List<Cell> GetSubgridCells(int x, int y)
+    {
+        List<Cell> cells = new List<Cell>();
         int startX = x - x % subGridSize;
         int startY = y - y % subGridSize;
 
         for (int i = 0; i < subGridSize; i++)
         {
             for (int j = 0; j < subGridSize; j++)
-                field[startX + i, startY + j].HighlightBackground();
+                cells.Add(field[startX + i, startY + j]);
         }
+
+        return cells;
     }
 
-    public void HighlightValue(int value)
+    public List<Cell> GetValueCells(int value)
     {
-        ClearHighlightValue();
+        List<Cell> cells = new List<Cell>();
 
         for (int i = 0; i < fieldSize; i++)
         {
             for (int j = 0; j < fieldSize; j++)
             {
                 if (field[i, j].CellValue == value)
-                    field[i, j].HighlightValue();
+                    cells.Add(field[i, j]);
             }
         }
-    }
 
-    public void ClearHighlightValue()
-    {
-        foreach (Cell c in field)
-            c.UnhighlightValue();
+        return cells;
     }
 
     void ClearHighlightBackground()

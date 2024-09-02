@@ -17,13 +17,7 @@ public class FixedInput : MonoBehaviour
         foreach (var element in inputElements)
             element.SetSelected(element.GetValue() == value);
 
-        gameField.HighlightValue(value);
-    }
-
-    public void OverrideValue(int value)
-    {
-        foreach (var element in inputElements)
-            element.SetSelected(element.GetValue() == value);
+        gameField.HighlightValues(value);
     }
 
     public void UpdateSliders()
