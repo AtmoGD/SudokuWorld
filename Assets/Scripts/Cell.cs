@@ -103,6 +103,16 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         cellAnimator.SetBool("IsHighlighted", false);
     }
 
+    public void SoftHighlightBackground()
+    {
+        cellAnimator.SetBool("IsSoftHighlighted", true);
+    }
+
+    public void UnsoftHighlightBackground()
+    {
+        cellAnimator.SetBool("IsSoftHighlighted", false);
+    }
+
     public void HighlightError()
     {
         cellAnimator.SetBool("IsError", true);

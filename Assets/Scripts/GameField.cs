@@ -125,6 +125,8 @@ public class GameField : MonoBehaviour
     {
         if (isActivated) return;
 
+        // UpdateHighlights();
+
         GenerateNewSudoku();
 
         GenerateField();
@@ -317,46 +319,27 @@ public class GameField : MonoBehaviour
 
     public void SelectCell(Cell cell)
     {
-        if (selectedCell == cell) return;
-
-        if (selectedCell != null && selectedCell != cell)
-        {
-            selectedCell.Deselect();
-            ClearHighlighByType(InputType.FLOATING);
-        }
-
         selectedCell = cell;
 
-        if (selectedCell != null)
-        {
-            selectedCell.Select();
-
-            int x = selectedCell.CellPosition.x;
-            int y = selectedCell.CellPosition.y;
-
-            if (highlightRowsAndColumns)
-                AddHighlightData(new HighlightData { cells = GetRowAndColumnCells(x, y), inputType = InputType.FLOATING });
-
-            if (highlightSubGrids)
-                AddHighlightData(new HighlightData { cells = GetSubgridCells(x, y), inputType = InputType.FLOATING });
-        }
+        UpdateHighlights();
     }
 
     public void DeselectCell()
     {
         if (selectedCell == null) return;
 
-        ClearHighlighByType(InputType.FLOATING);
-
         selectedCell.Deselect();
 
         selectedCell = null;
+
+        UpdateHighlights();
     }
 
     public void SetCellValue(Cell cell, int value)
     {
         cell.SetType(CellType.USER);
         SetCellValue(cell.CellPosition.x, cell.CellPosition.y, value, true);
+        UpdateHighlights();
     }
 
     public void SetCellValue(int posX, int posY, int value, bool userInput)
@@ -372,66 +355,45 @@ public class GameField : MonoBehaviour
         OnSetCellValue?.Invoke();
     }
 
-    public void HighlightValues(int value)
-    {
-        ClearHighlighByType(InputType.FIXED);
-
-        if (value != 0 && highlightValues)
-            AddHighlightData(new HighlightData { cells = GetValueCells(value), inputType = InputType.FIXED });
-    }
-
-    public void AddHighlightData(HighlightData data)
-    {
-        highlightDatas.Add(data);
-        UpdateHighlights();
-    }
 
     public void UpdateHighlights()
     {
-        highlightDatas.ForEach(x =>
+
+        foreach (Cell cell in field)
         {
-            foreach (Cell cell in x.cells)
-            {
-                if (x.inputType == InputType.FLOATING)
-                    cell.HighlightBackground();
-                else
-                    cell.Select();
-            }
-        });
-    }
+            cell.Deselect();
+            cell.UnhighlightBackground();
+            cell.UnsoftHighlightBackground();
 
-    public void ClearHighlighByType(InputType inputType)
-    {
-        highlightDatas.ForEach(x =>
+            if (cell.CellValue == 0)
+                cell.UnhighlightError();
+        }
+
+        if (selectedCell != null)
         {
-            if (x.inputType == inputType)
+            selectedCell.Select();
+
+            if (highlightRowsAndColumns)
             {
-                foreach (Cell cell in x.cells)
-                {
-                    if (inputType == InputType.FLOATING)
-                        cell.UnhighlightBackground();
-                    else
-                        cell.Deselect();
-                }
+                List<Cell> cells = GetRowAndColumnCells(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
+                cells.ForEach(x => x.HighlightBackground());
             }
-        });
 
-        highlightDatas.RemoveAll(x => x.inputType == inputType);
-        UpdateHighlights();
-    }
+            if (highlightSubGrids)
+            {
+                List<Cell> cells = GetSubgridCells(selectedCell.CellPosition.x, selectedCell.CellPosition.y);
+                cells.ForEach(x => x.HighlightBackground());
+            }
+        }
 
-    public void ClearHighlightAll()
-    {
-        highlightDatas.ForEach(x =>
+        if (highlightValues)
         {
-            foreach (Cell cell in x.cells)
+            if (fixedInput.SelectedValue != 0)
             {
-                cell.UnhighlightBackground();
-                cell.Deselect();
+                List<Cell> cells = GetValueCells(fixedInput.SelectedValue);
+                cells.ForEach(x => x.SoftHighlightBackground());
             }
-        });
-
-        highlightDatas.Clear();
+        }
     }
 
     public List<Cell> GetRowAndColumnCells(int x, int y)
@@ -476,11 +438,6 @@ public class GameField : MonoBehaviour
         return cells;
     }
 
-    void ClearHighlightBackground()
-    {
-        foreach (Cell c in field)
-            c.UnhighlightBackground();
-    }
 
     public int GetValueAmount(int value)
     {
