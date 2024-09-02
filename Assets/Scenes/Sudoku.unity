@@ -4191,7 +4191,7 @@ MonoBehaviour:
   animator: {fileID: 164366712}
   circleRadius: 255
   stepSize: 10.2
-  distanceThreshold: 25
+  distanceThreshold: 50
   inputTimeout: 0.5
 --- !u!95 &164366712
 Animator:
