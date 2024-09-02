@@ -8,6 +8,7 @@ public class FixedInputCell : MonoBehaviour
     [SerializeField] private int value;
     [SerializeField] private Animator animator;
     [SerializeField] private Image sliderImage;
+    [SerializeField] private Image errorSliderImage;
     [SerializeField] private float selectTimeout = 0.5f;
     private bool isSelected;
     private FixedInput fixedInput;
@@ -46,7 +47,10 @@ public class FixedInputCell : MonoBehaviour
 
     public void UpdateSlider()
     {
-        sliderImage.fillAmount = fixedInput.GetGameField().GetValueAmount(value) / 9f;
+        int currentValue = fixedInput.GetGameField().GetValueAmount(value);
+        sliderImage.fillAmount = currentValue / 9f;
+        errorSliderImage.fillAmount = (currentValue - 9) / 9f;
+
     }
 
     public int GetValue()

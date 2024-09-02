@@ -87,6 +87,8 @@ public class GameField : MonoBehaviour
     {
         if (!isActivated) return;
 
+        CheckInputs();
+
         UpdateTime();
     }
 
@@ -398,6 +400,46 @@ public class GameField : MonoBehaviour
             }
         }
         return amount;
+    }
+
+    private void CheckInputs()
+    {
+        if (Input.anyKeyDown)
+        {
+            switch (Input.inputString)
+            {
+                case "1":
+                    SetCellValue(selectedCell, 1);
+                    break;
+                case "2":
+                    SetCellValue(selectedCell, 2);
+                    break;
+                case "3":
+                    SetCellValue(selectedCell, 3);
+                    break;
+                case "4":
+                    SetCellValue(selectedCell, 4);
+                    break;
+                case "5":
+                    SetCellValue(selectedCell, 5);
+                    break;
+                case "6":
+                    SetCellValue(selectedCell, 6);
+                    break;
+                case "7":
+                    SetCellValue(selectedCell, 7);
+                    break;
+                case "8":
+                    SetCellValue(selectedCell, 8);
+                    break;
+                case "9":
+                    SetCellValue(selectedCell, 9);
+                    break;
+                case "0":
+                    SetCellValue(selectedCell, 0);
+                    break;
+            }
+        }
     }
 
 }
