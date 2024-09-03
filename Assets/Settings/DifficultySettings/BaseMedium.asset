@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51ad78519dfdc294292d2335817709d1, type: 3}
   m_Name: BaseMedium
   m_EditorClassIdentifier: 
-  difficultyName: Ok
+  displayName: 
+  uid: 
+  gameFieldPrefab: {fileID: 630998427052699221, guid: 2fe38a80916319b44a75b7a05a9f7007, type: 3}
   range: {x: 40, y: 50}

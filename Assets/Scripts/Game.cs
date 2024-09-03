@@ -17,7 +17,10 @@ public class Game : MonoBehaviour
         }
     }
     [SerializeField] private GameField activeGameField;
+    [SerializeField] private Menu menu;
+    public Menu Menu { get { return menu; } }
     [SerializeField] private Theme theme;
+    [SerializeField] private GameObject gameFieldParent;
     public Theme Theme { get { return theme; } }
 
     private void Awake()
@@ -28,15 +31,22 @@ public class Game : MonoBehaviour
             Destroy(gameObject);
     }
 
-    private void Start()
+    public void StartBaseGame(DifficultySetting settings)
     {
-        StartNewGame();
+        ClearGameFieldParent();
+        GameObject gameFieldObject = Instantiate(settings.gameFieldPrefab, gameFieldParent.transform);
+        activeGameField = gameFieldObject.GetComponent<GameField>();
+        activeGameField.StartNewGame(settings);
     }
 
-    public void StartNewGame()
+    public void ClearGameFieldParent()
     {
-        if (activeGameField != null)
-            activeGameField.StartNewGame();
+        foreach (Transform child in gameFieldParent.transform)
+#if UNITY_EDITOR
+            DestroyImmediate(child.gameObject);
+#else
+            Destroy(child.gameObject);
+#endif
     }
 
     public void SetActiveGameField(GameField gameField)

@@ -65,6 +65,7 @@ public class GameField : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private DifficultySetting difficulty;
+    public DifficultySetting Difficulty { get { return difficulty; } }
     [SerializeField] private string saveFileName;
 
     [Header("References")]
@@ -96,12 +97,16 @@ public class GameField : MonoBehaviour
     [SerializeField] private bool isActivated = false;
     [SerializeField] private SudokuData sudoku;
     public SudokuData Sudoku { get { return sudoku; } }
-    [SerializeField] private List<HighlightData> highlightDatas = new List<HighlightData>();
     private Cell selectedCell;
     public Cell SelectedCell { get { return selectedCell; } }
 
 
     private void Awake()
+    {
+        Reset();
+    }
+
+    private void Reset()
     {
         sudoku = new SudokuData();
         isActivated = false;
@@ -117,20 +122,38 @@ public class GameField : MonoBehaviour
         UpdateTime();
     }
 
+    public void OpenMenu()
+    {
+        Debug.Log("Open Menu");
+        CloseGame();
+        Game.Manager.Menu.SetMenuOpen(true);
+    }
+
     private void UpdateTime()
     {
-        if (sudoku.isSolved) return;
+        if (sudoku.isSolved)
+        {
+            timerText.text = TimeSpan.FromSeconds(sudoku.timeElapsed).ToString("mm':'ss");
+            isActivated = false;
+            // Show Win screen or something
+            return;
+        }
 
         sudoku.timeElapsed += Time.deltaTime;
 
         timerText.text = TimeSpan.FromSeconds(sudoku.timeElapsed).ToString("mm':'ss");
     }
 
-    public void StartNewGame()
+    public void StartNewGameWithSameDifficulty()
+    {
+        StartNewGame(difficulty);
+    }
+
+    public void StartNewGame(DifficultySetting difficulty)
     {
         if (isActivated) return;
 
-        // UpdateHighlights();
+        SetDifficulty(difficulty);
 
         GenerateNewSudoku();
 
@@ -139,6 +162,16 @@ public class GameField : MonoBehaviour
         ResetState();
 
         SaveGame();
+    }
+
+    public void ResumeGame()
+    {
+        // Load saved puzzle
+    }
+
+    public void SaveGame()
+    {
+        // Save current puzzle
     }
 
     public void ResetState()
@@ -150,19 +183,14 @@ public class GameField : MonoBehaviour
         SetIsActivated(true);
     }
 
+    public void SetDifficulty(DifficultySetting newDifficulty)
+    {
+        difficulty = newDifficulty;
+    }
+
     public void SetIsActivated(bool value)
     {
         isActivated = value;
-    }
-
-    public void ResumeGame()
-    {
-        // Load saved puzzle
-    }
-
-    public void SaveGame()
-    {
-        // Save current puzzle
     }
 
     public void AddCommand(FieldCommand command)

@@ -15,11 +15,9 @@ public class GameFieldEditor : Editor
         if (GUILayout.Button("Generate Field"))
         {
             gameField.SetIsActivated(false);
-            gameField.StartNewGame();
-            // SudokuGenerator.PrintGrid(gameField.Sudoku.puzzle);
+            gameField.StartNewGame(gameField.Difficulty);
         }
 
-        // Draw the current sudoku solution with seperation
         if (gameField != null && gameField.Sudoku != null && gameField.Sudoku.solution != null)
         {
             GUILayout.Label("Current Sudoku Solution:");

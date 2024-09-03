@@ -38,7 +38,6 @@ public class FixedInput : MonoBehaviour
             foreach (var element in inputElements)
                 element.SetSelected(element.GetValue() == selectedValue);
         }
-
     }
 
 

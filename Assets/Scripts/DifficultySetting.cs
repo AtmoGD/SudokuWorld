@@ -4,5 +4,7 @@ using UnityEngine;
 public class DifficultySetting : ScriptableObject
 {
     public string displayName;
+    public string uid;
+    public GameObject gameFieldPrefab;
     public Vector2Int range;
 }
