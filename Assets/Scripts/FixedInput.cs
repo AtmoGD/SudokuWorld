@@ -21,7 +21,7 @@ public class FixedInput : MonoBehaviour
         foreach (var element in inputElements)
             element.SetSelected(element.GetValue() == value);
 
-        gameField.UpdateHighlights();
+        gameField.FixedInputSelected();
     }
 
     public void OnSetCell()

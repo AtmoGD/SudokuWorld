@@ -70,6 +70,10 @@ public class GameField : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameObject cellPrefab;
     [SerializeField] private Transform cellParent;
+    [SerializeField] private GameObject subgridSeparatorPrefab;
+    [SerializeField] private Transform subgridSeparatorParent;
+    [SerializeField] private GameObject cellSeparatorPrefab;
+    [SerializeField] private Transform cellSeparatorParent;
     [SerializeField] private float fieldWidth;
     [SerializeField] private int fieldSize;
     [SerializeField] private int subGridSize;
@@ -80,6 +84,7 @@ public class GameField : MonoBehaviour
     [SerializeField] private bool highlightRowsAndColumns;
     [SerializeField] private bool highlightSubGrids;
     [SerializeField] private bool highlightValues;
+    [SerializeField] private bool deselectOnFixedInput;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI headlineText;
     [SerializeField] private FloatingInput floatingInput;
@@ -191,6 +196,11 @@ public class GameField : MonoBehaviour
         highlightValues = !highlightValues;
     }
 
+    public void TriggerDeselectOnFixedInput()
+    {
+        deselectOnFixedInput = !deselectOnFixedInput;
+    }
+
     private void GenerateNewSudoku()
     {
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
@@ -202,7 +212,7 @@ public class GameField : MonoBehaviour
 
     private void GenerateField()
     {
-        DeleteCells();
+        DeleteCellsAndSeperators();
 
         CalculateCellSize();
 
@@ -222,6 +232,43 @@ public class GameField : MonoBehaviour
                 cell.SetType(cell.CellValue == 0 ? CellType.EMPTY : CellType.FIXED);
 
                 field[i, j] = cell;
+
+                if (j != fieldSize - 1)
+                {
+                    Vector2 newRightPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.y);
+                    if ((j + 1) % subGridSize != 0)
+                    {
+                        newRightPosition.x += cellSize / 2;
+                        GameObject cellSeparatorObjectRight = Instantiate(cellSeparatorPrefab, cellSeparatorParent);
+                        cellSeparatorObjectRight.transform.localPosition = newRightPosition;
+                    }
+                    else if (i == fieldSize / 2)
+                    {
+                        newRightPosition.x += cellSize / 2 + subGridSpacing / 2;
+                        GameObject subgridSeparatorObject = Instantiate(subgridSeparatorPrefab, subgridSeparatorParent);
+                        subgridSeparatorObject.transform.localPosition = newRightPosition;
+                    }
+                }
+
+                if (i != fieldSize - 1)
+                {
+                    Vector2 newDownPosition = new Vector2(cell.transform.localPosition.x, cell.transform.localPosition.y);
+                    if ((i + 1) % subGridSize != 0)
+                    {
+                        newDownPosition.y -= cellSize / 2;
+                        GameObject cellSeparatorObjectDown = Instantiate(cellSeparatorPrefab, cellSeparatorParent);
+                        cellSeparatorObjectDown.transform.localPosition = newDownPosition;
+                        cellSeparatorObjectDown.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
+                    else if (j == fieldSize / 2)
+                    {
+                        newDownPosition.y -= cellSize / 2 + subGridSpacing / 2;
+                        GameObject subgridSeparatorObject = Instantiate(subgridSeparatorPrefab, subgridSeparatorParent);
+                        subgridSeparatorObject.transform.localPosition = newDownPosition;
+                        subgridSeparatorObject.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
+
+                }
             }
         }
 
@@ -247,7 +294,7 @@ public class GameField : MonoBehaviour
         return position;
     }
 
-    public void DeleteCells()
+    public void DeleteCellsAndSeperators()
     {
         for (int i = cellParent.childCount - 1; i >= 0; i--)
         {
@@ -255,6 +302,24 @@ public class GameField : MonoBehaviour
             DestroyImmediate(cellParent.GetChild(i).gameObject);
 #else
             Destroy(cellParent.GetChild(i).gameObject);
+#endif
+        }
+
+        for (int i = subgridSeparatorParent.childCount - 1; i >= 0; i--)
+        {
+#if UNITY_EDITOR
+            DestroyImmediate(subgridSeparatorParent.GetChild(i).gameObject);
+#else
+            Destroy(subgridSeparatorParent.GetChild(i).gameObject);
+#endif
+        }
+
+        for (int i = cellSeparatorParent.childCount - 1; i >= 0; i--)
+        {
+#if UNITY_EDITOR
+            DestroyImmediate(cellSeparatorParent.GetChild(i).gameObject);
+#else
+            Destroy(cellSeparatorParent.GetChild(i).gameObject);
 #endif
         }
 
@@ -320,6 +385,14 @@ public class GameField : MonoBehaviour
     public void SelectCell(Cell cell)
     {
         selectedCell = cell;
+
+        UpdateHighlights();
+    }
+
+    public void FixedInputSelected()
+    {
+        if (deselectOnFixedInput)
+            DeselectCell();
 
         UpdateHighlights();
     }
