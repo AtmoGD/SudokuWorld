@@ -214,16 +214,22 @@ public class GameField : MonoBehaviour
     public void TriggerHighlightRowsAndColumns()
     {
         highlightRowsAndColumns = !highlightRowsAndColumns;
+
+        UpdateHighlights();
     }
 
     public void TriggerHighlightSubGrids()
     {
         highlightSubGrids = !highlightSubGrids;
+
+        UpdateHighlights();
     }
 
     public void TriggerHighlightValues()
     {
         highlightValues = !highlightValues;
+
+        FixedInput.SelectValue(highlightValues ? UnityEngine.Random.Range(1, 10) : 0);
     }
 
     public void TriggerDeselectOnFixedInput()
