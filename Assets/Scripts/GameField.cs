@@ -5,12 +5,6 @@ using TMPro;
 using UnityEngine.Events;
 using System.Threading.Tasks;
 
-[Serializable]
-public class Rows
-{
-    public List<Cell> cells;
-}
-
 
 [Serializable]
 public class SudokuData
@@ -37,12 +31,6 @@ public class SudokuData
     }
 }
 
-public enum InputType
-{
-    FLOATING,
-    FIXED
-}
-
 [Serializable]
 public class FieldCommand
 {
@@ -50,6 +38,14 @@ public class FieldCommand
     public int posY = 0;
     public float time = 0;
     public int value = 0;
+
+    public FieldCommand()
+    {
+        posX = 0;
+        posY = 0;
+        time = 0;
+        value = 0;
+    }
 }
 
 public class GameField : MonoBehaviour
@@ -150,7 +146,6 @@ public class GameField : MonoBehaviour
 
         GenerateNewSudoku(InitGameWhenReady);
     }
-
 
     private void InitGameWhenReady()
     {
@@ -462,7 +457,6 @@ public class GameField : MonoBehaviour
         {
             UpdateHighlights();
         }
-
     }
 
     public void SetCellValue(int posX, int posY, int value, bool userInput)
