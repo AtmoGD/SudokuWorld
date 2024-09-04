@@ -61,6 +61,13 @@ public class Game : MonoBehaviour
         DataManager.SaveData(playerData, saveFileName);
     }
 
+    public void DeletePlayerData()
+    {
+        DataManager.DeleteData(saveFileName);
+        playerData = new PlayerData();
+        DataManager.SaveData(playerData, saveFileName);
+    }
+
     public void StartNewBaseGame(DifficultySetting settings)
     {
         InstantiateNewGameField(settings.gameFieldPrefab);
