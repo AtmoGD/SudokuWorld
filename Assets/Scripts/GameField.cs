@@ -239,7 +239,7 @@ public class GameField : MonoBehaviour
 
         SudokuGenerator.GeneratePuzzle(randomDifficulty);
 
-        // await Task.Run(() => SudokuGenerator.GeneratePuzzle(randomDifficulty));
+        // await Task.Run(() => SudokuGenerator.GeneratePuzzle(randomDifficulty)); // DONT WORKS WITH WEB APPS
 
         sudoku.uid = Guid.NewGuid().ToString();
         sudoku.puzzle = SudokuGenerator.Puzzle.Clone() as int[,];

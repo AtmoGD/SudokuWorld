@@ -47,9 +47,7 @@ public class Game : MonoBehaviour
         else if (Manager != this)
             Destroy(gameObject);
 
-        playerData = new PlayerData();
-
-        // LoadData();
+        LoadData();
     }
 
     private void LoadData()
