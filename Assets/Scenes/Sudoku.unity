@@ -248,7 +248,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: StartBaseGame
+      value: StartNewBaseGame
       objectReference: {fileID: 0}
     - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -600,6 +600,54 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: c0d66557e6e886446b2af17220906a63, type: 3}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 856974955}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 2096607788}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetMenuOpen
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: ResumeLastOpenGameWithDifficulty
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Menu, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: Game, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 11400000, guid: bb4e35f4855a715428b3388755c26850, type: 2}
+    - target: {fileID: 7222925896264757628, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: DifficultySetting, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 7545105146641700139, guid: 9a16c05783d68f54fa0c0e4b66c1e685, type: 3}
       propertyPath: m_Name
       value: Load Game Button
@@ -1659,7 +1707,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fabfa1d71fdf3d145b1e9c9d2150e7d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeGameField: {fileID: 0}
+  saveFileName: game.sudoku
   menu: {fileID: 856974955}
   theme: {fileID: 11400000, guid: e9d1ec2aec59a484e936ff334602ffa6, type: 2}
   gameFieldParent: {fileID: 1882563738}

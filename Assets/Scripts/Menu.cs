@@ -8,7 +8,6 @@ public class Menu : MonoBehaviour
 
     public void SetMenuOpen(bool open)
     {
-        Debug.Log("SetMenuOpen");
         animator.SetBool("MenuOpen", open);
     }
 

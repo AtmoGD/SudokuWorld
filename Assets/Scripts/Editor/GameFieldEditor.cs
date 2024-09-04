@@ -18,6 +18,7 @@ public class GameFieldEditor : Editor
             gameField.StartNewGame(gameField.Difficulty);
         }
 
+
         if (gameField != null && gameField.Sudoku != null && gameField.Sudoku.solution != null)
         {
             GUILayout.Label("Current Sudoku Solution:");

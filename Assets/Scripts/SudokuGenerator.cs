@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Unity.Burst;
 using UnityEngine;
 
 // Generated with Perplexity
+[BurstCompile]
 public static class SudokuGenerator
 {
     private const int GridSize = 9;

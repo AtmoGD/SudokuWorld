@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.Events;
-using JetBrains.Annotations;
-using System.Linq;
+using System.Threading.Tasks;
 
 [Serializable]
 public class Rows
@@ -16,13 +15,15 @@ public class Rows
 [Serializable]
 public class SudokuData
 {
-    public int[,] puzzle;
-    public int[,] solution;
-    public int[,] userSolution;
-    public List<FieldCommand> commands;
-    public float timeElapsed;
-    public bool isSolved;
-    public string difficulty;
+    public string uid = "";
+    public int[,] puzzle = new int[9, 9];
+    public int[,] solution = new int[9, 9];
+    public int[,] userSolution = new int[9, 9];
+    public List<FieldCommand> commands = new List<FieldCommand>();
+    public float timeElapsed = 0;
+    public bool isSolved = false;
+    public string difficulty = "";
+    public bool lastOpened = false;
 
     public SudokuData()
     {
@@ -42,21 +43,13 @@ public enum InputType
     FIXED
 }
 
-
-[Serializable]
-public class HighlightData
-{
-    public List<Cell> cells;
-    public InputType inputType;
-}
-
 [Serializable]
 public class FieldCommand
 {
-    public int posX;
-    public int posY;
-    public float time;
-    public int value;
+    public int posX = 0;
+    public int posY = 0;
+    public float time = 0;
+    public int value = 0;
 }
 
 public class GameField : MonoBehaviour
@@ -99,6 +92,7 @@ public class GameField : MonoBehaviour
     public SudokuData Sudoku { get { return sudoku; } }
     private Cell selectedCell;
     public Cell SelectedCell { get { return selectedCell; } }
+    private bool isGeneratingSudoku = false;
 
 
     private void Awake()
@@ -115,7 +109,7 @@ public class GameField : MonoBehaviour
 
     private void Update()
     {
-        if (!isActivated) return;
+        if (!isActivated || sudoku.isSolved) return;
 
         CheckInputs();
 
@@ -124,7 +118,6 @@ public class GameField : MonoBehaviour
 
     public void OpenMenu()
     {
-        Debug.Log("Open Menu");
         CloseGame();
         Game.Manager.Menu.SetMenuOpen(true);
     }
@@ -151,11 +144,17 @@ public class GameField : MonoBehaviour
 
     public void StartNewGame(DifficultySetting difficulty)
     {
-        if (isActivated) return;
+        if (isActivated || isGeneratingSudoku) return;
 
         SetDifficulty(difficulty);
 
-        GenerateNewSudoku();
+        GenerateNewSudoku(InitGameWhenReady);
+    }
+
+
+    private void InitGameWhenReady()
+    {
+        Game.Manager.SetLastOpenedFor(sudoku.uid);
 
         GenerateField();
 
@@ -164,14 +163,20 @@ public class GameField : MonoBehaviour
         SaveGame();
     }
 
-    public void ResumeGame()
+    public void ResumeGame(SudokuData sudokuToResume)
     {
-        // Load saved puzzle
+        sudoku = sudokuToResume;
+
+        Game.Manager.SetLastOpenedFor(sudoku.uid);
+
+        GenerateField();
+
+        SetIsActivated(true);
     }
 
     public void SaveGame()
     {
-        // Save current puzzle
+        Game.Manager.SaveGame(sudoku);
     }
 
     public void ResetState()
@@ -229,13 +234,23 @@ public class GameField : MonoBehaviour
         deselectOnFixedInput = !deselectOnFixedInput;
     }
 
-    private void GenerateNewSudoku()
+    private async void GenerateNewSudoku(UnityAction callback = null)
     {
+        isGeneratingSudoku = true;
+
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
-        SudokuGenerator.GeneratePuzzle(randomDifficulty);
+
+        await Task.Run(() => SudokuGenerator.GeneratePuzzle(randomDifficulty));
+
+        sudoku.uid = Guid.NewGuid().ToString();
         sudoku.puzzle = SudokuGenerator.Puzzle.Clone() as int[,];
         sudoku.solution = SudokuGenerator.GridSolved.Clone() as int[,];
         sudoku.userSolution = SudokuGenerator.Puzzle.Clone() as int[,]; // Copy the puzzle to userSolution
+        sudoku.lastOpened = true;
+
+        isGeneratingSudoku = false;
+
+        callback?.Invoke();
     }
 
     private void GenerateField()
@@ -404,12 +419,6 @@ public class GameField : MonoBehaviour
         return true;
     }
 
-    public void CheckIfSolved()
-    {
-        if (IsSolved())
-            sudoku.isSolved = true;
-    }
-
     public void SelectCell(Cell cell)
     {
         selectedCell = cell;
@@ -440,7 +449,20 @@ public class GameField : MonoBehaviour
     {
         cell.SetType(CellType.USER);
         SetCellValue(cell.CellPosition.x, cell.CellPosition.y, value, true);
-        UpdateHighlights();
+
+        if (IsSolved())
+        {
+            FixedInput.SelectValue(0);
+            if (!deselectOnFixedInput) DeselectCell();
+
+            sudoku.isSolved = true;
+            isActivated = false;
+        }
+        else
+        {
+            UpdateHighlights();
+        }
+
     }
 
     public void SetCellValue(int posX, int posY, int value, bool userInput)
@@ -455,7 +477,6 @@ public class GameField : MonoBehaviour
 
         OnSetCellValue?.Invoke();
     }
-
 
     public void UpdateHighlights()
     {
@@ -539,7 +560,6 @@ public class GameField : MonoBehaviour
         return cells;
     }
 
-
     public int GetValueAmount(int value)
     {
         int amount = 0;
@@ -556,6 +576,8 @@ public class GameField : MonoBehaviour
 
     private void CheckInputs()
     {
+        if (!selectedCell || selectedCell.CellType == CellType.FIXED) return;
+
         if (Input.anyKeyDown)
         {
             switch (Input.inputString)

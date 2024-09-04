@@ -1,7 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+
+
+[Serializable]
+public class PlayerData
+{
+    public List<SudokuData> playedGames = new List<SudokuData>();
+}
 
 public class Game : MonoBehaviour
 {
@@ -16,12 +24,16 @@ public class Game : MonoBehaviour
             return manager;
         }
     }
-    [SerializeField] private GameField activeGameField;
+
+    [SerializeField] private string saveFileName = "game.sudoku";
     [SerializeField] private Menu menu;
     public Menu Menu { get { return menu; } }
     [SerializeField] private Theme theme;
-    [SerializeField] private GameObject gameFieldParent;
     public Theme Theme { get { return theme; } }
+    [SerializeField] private GameObject gameFieldParent;
+
+    private PlayerData playerData;
+    private GameField activeGameField;
 
     private void Awake()
     {
@@ -29,14 +41,49 @@ public class Game : MonoBehaviour
             manager = this;
         else if (Manager != this)
             Destroy(gameObject);
+
+        LoadData();
     }
 
-    public void StartBaseGame(DifficultySetting settings)
+    private void LoadData()
     {
-        ClearGameFieldParent();
-        GameObject gameFieldObject = Instantiate(settings.gameFieldPrefab, gameFieldParent.transform);
-        activeGameField = gameFieldObject.GetComponent<GameField>();
+        playerData = DataManager.LoadData<PlayerData>(saveFileName) ?? new PlayerData();
+    }
+
+    public void SaveGame(SudokuData sudokuData)
+    {
+        SudokuData sudoku = playerData.playedGames.Find(sudoku => sudoku.uid == sudokuData.uid);
+        if (sudoku != null)
+            playerData.playedGames.Remove(sudoku);
+
+        playerData.playedGames.Add(sudokuData);
+
+        DataManager.SaveData(playerData, saveFileName);
+    }
+
+    public void StartNewBaseGame(DifficultySetting settings)
+    {
+        InstantiateNewGameField(settings.gameFieldPrefab);
         activeGameField.StartNewGame(settings);
+    }
+
+    public void ResumeLastOpenGameWithDifficulty(DifficultySetting settings)
+    {
+        SudokuData sudokuData = playerData.playedGames.Find(sudoku => sudoku.difficulty == settings.displayName && sudoku.lastOpened);
+        if (sudokuData != null)
+        {
+            InstantiateNewGameField(settings.gameFieldPrefab);
+            activeGameField.ResumeGame(sudokuData);
+        }
+        else
+        {
+            Debug.Log("CAN'T FIND LAST OPEN SUDOKU!");
+        }
+    }
+
+    public void SetLastOpenedFor(string uid)
+    {
+        playerData.playedGames.ForEach(data => { data.lastOpened = data.uid == uid; });
     }
 
     public void ClearGameFieldParent()
@@ -47,6 +94,13 @@ public class Game : MonoBehaviour
 #else
             Destroy(child.gameObject);
 #endif
+    }
+
+    public void InstantiateNewGameField(GameObject prefab)
+    {
+        ClearGameFieldParent();
+        GameObject gameFieldObject = Instantiate(prefab, gameFieldParent.transform);
+        activeGameField = gameFieldObject.GetComponent<GameField>();
     }
 
     public void SetActiveGameField(GameField gameField)
