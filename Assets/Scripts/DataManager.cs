@@ -25,7 +25,7 @@ public static class DataManager
         }
         catch (Exception e)
         {
-            Debug.LogError("CAN'T LOAD DATA! - REASON: " + e.Message);
+            Debug.Log("CAN'T LOAD DATA! - REASON: " + e.Message);
             return default;
         }
     }
@@ -62,7 +62,7 @@ public static class DataManager
         }
         else
         {
-            Debug.LogError("FILE DOESN'T EXISTS ON GIVEN PATH!");
+            Debug.Log("FILE DOESN'T EXISTS ON GIVEN PATH!");
             return default;
         }
     }
