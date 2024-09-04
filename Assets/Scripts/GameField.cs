@@ -144,7 +144,9 @@ public class GameField : MonoBehaviour
 
         SetDifficulty(difficulty);
 
-        GenerateNewSudoku(InitGameWhenReady);
+        GenerateNewSudoku();
+
+        InitGameWhenReady();
     }
 
     private void InitGameWhenReady()
@@ -229,13 +231,15 @@ public class GameField : MonoBehaviour
         deselectOnFixedInput = !deselectOnFixedInput;
     }
 
-    private async void GenerateNewSudoku(UnityAction callback = null)
+    private void GenerateNewSudoku(UnityAction callback = null)
     {
         isGeneratingSudoku = true;
 
         int randomDifficulty = UnityEngine.Random.Range(difficulty.range.x, difficulty.range.y);
 
-        await Task.Run(() => SudokuGenerator.GeneratePuzzle(randomDifficulty));
+        SudokuGenerator.GeneratePuzzle(randomDifficulty);
+
+        // await Task.Run(() => SudokuGenerator.GeneratePuzzle(randomDifficulty));
 
         sudoku.uid = Guid.NewGuid().ToString();
         sudoku.puzzle = SudokuGenerator.Puzzle.Clone() as int[,];
