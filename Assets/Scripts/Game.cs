@@ -79,7 +79,7 @@ public class Game : MonoBehaviour
 
     public void ResumeLastOpenGameWithDifficulty(DifficultySetting settings)
     {
-        SudokuData sudokuData = playerData.playedGames.Find(sudoku => sudoku.difficulty == settings.displayName && sudoku.lastOpened);
+        SudokuData sudokuData = GetLastOpenGame(settings);
         if (sudokuData != null)
         {
             InstantiateNewGameField(settings.gameFieldPrefab);
@@ -89,6 +89,11 @@ public class Game : MonoBehaviour
         {
             Debug.Log("CAN'T FIND LAST OPEN SUDOKU!");
         }
+    }
+
+    public SudokuData GetLastOpenGame(DifficultySetting settings)
+    {
+        return playerData.playedGames.Find(sudoku => sudoku.difficulty == settings.displayName && sudoku.lastOpened);
     }
 
     public void InstantiateNewGameField(GameObject prefab)
