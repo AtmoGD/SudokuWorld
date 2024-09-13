@@ -86,6 +86,8 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void Select()
     {
         cellAnimator.SetBool("IsSelected", true);
+
+        Vibration.Manager.PlopVibration();
     }
 
     public void Deselect()

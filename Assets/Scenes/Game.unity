@@ -1970,6 +1970,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2096607787}
   - component: {fileID: 2096607788}
+  - component: {fileID: 2096607789}
   - component: {fileID: 2096607786}
   - component: {fileID: 2096607785}
   - component: {fileID: 2096607784}
@@ -2082,6 +2083,18 @@ MonoBehaviour:
   menu: {fileID: 856974955}
   theme: {fileID: 11400000, guid: e9d1ec2aec59a484e936ff334602ffa6, type: 2}
   gameFieldParent: {fileID: 1882563738}
+--- !u!114 &2096607789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2096607783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 135bef7db10bcbe45be0062131ab3988, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &291639061958191822
 PrefabInstance:
   m_ObjectHideFlags: 0
