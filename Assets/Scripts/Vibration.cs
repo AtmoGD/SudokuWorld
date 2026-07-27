@@ -5,6 +5,11 @@ public class Vibration : MonoBehaviour
 {
     public static Vibration Manager { get; private set; }
 
+    private void Awake()
+    {
+        Manager = this;
+    }
+
     [DllImport("__Internal")]
     private static extern void Vibrate(int ms);
 
