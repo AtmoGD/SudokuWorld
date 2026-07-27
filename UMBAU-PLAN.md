@@ -228,7 +228,7 @@ Der einzige Meilenstein, der den Altbestand berührt. Aufwand: **3–5 Tage** (d
 
 | # | Sub-Task | Ergebnis |
 |---|---|---|
-| **M0.1** | **Bestand sichern** — *teilweise erledigt* | ✅ Upgrade-Diff als ein Block committet (`2723059`) · ✅ `game.sudoku` untrackt, `.gitignore` um Secrets/`*.slnx`/`.idea` ergänzt (`c320fdf`) · ✅ NRE in `Vibration.cs` an der Ursache behoben (`3c24494`) · ✅ Tag `prototype-v0` gesetzt und gepusht.<br>⬜ **Offen: Kompilierprüfung** des Fixes im Editor.<br>⬜ **Offen: Bildschirmaufnahme der Eingabe** (Shot-Liste in §5.1) — die Referenz, gegen die M0.4 abgenommen wird. Ohne sie merkt man erst Wochen später, dass eine Animation 80 ms zu träge geworden ist. |
+| **M0.1** | **Bestand sichern** — *teilweise erledigt* | ✅ Upgrade-Diff als ein Block committet (`2723059`) · ✅ `game.sudoku` untrackt, `.gitignore` um Secrets/`*.slnx`/`.idea` ergänzt (`c320fdf`) · ✅ NRE in `Vibration.cs` an der Ursache behoben (`3c24494`) · ✅ Tag `prototype-v0` gesetzt und gepusht.<br>❌ **Bildschirmaufnahme verworfen** — siehe §5.1.<br>⬜ **Offen: Kompilierprüfung** des `Vibration`-Fixes, beim nächsten Öffnen des Projekts. |
 | **M0.2** | **Neues Projekt** | Unity-Version fixieren (→ §7 D-A), 2D-URP-Template, Struktur §4.1, alle `asmdef`s leer angelegt, `.gitignore` ergänzt (`.idea/`, `*.slnx`, `*.keystore`, `*.jks`, `google-services.json`, `GoogleService-Info.plist`), neues Repo. Ungenutzte Packages **nicht** mitnehmen (ai.assistant, ai.inference, multiplayer.center, visualscripting, timeline, collab-proxy). Input System statt Legacy. Zusätzlich `.gitattributes` mit `* text=auto` und Binär-Markern anlegen — der Altbestand erzeugt bei jedem `git add` LF/CRLF-Warnungen, das will man im neuen Repo nicht wieder haben. |
 | **M0.3** | **Asset-Transfer** | Dark UI + Sprite Atlas, Odin Rounded ohne Web-Font-Reste, die zwei Sprites. Sorting Layers und Quality Tiers anlegen (aktuell: 1 Sorting Layer, 6 Quality-Stufen ohne URP-Zuordnung — effektiv eine einzige Stufe). |
 | **M0.4** | **`RadialValuePicker` neu bauen** | Die ~95 Zeilen Mechanik, N-agnostisch. Sechs Änderungen: (1) Ziel ist `RectTransform` + `Action<int>` statt `GameField`; (2) `stepSize` → `totalArc/(n−1)`, damit der Bogen bei jedem N gleich breit bleibt; (3) Elemente zur Laufzeit instanziieren statt 10 von Hand im Prefab; (4) `/1800` → `CanvasScaler.referenceResolution` lesen; (5) `eventData.position` + `pointerId` statt `Input.mousePosition` (Multitouch); (6) Animator → Code-Tween. **Drei Bugs beim Port fixen**, sonst wandern sie mit: fehlendes `return` in `PointerUp` (verschluckt schnelle Flicks), `inputDirection` wird bei PointerUp nicht zurückgesetzt, kein Multitouch. |
@@ -236,21 +236,22 @@ Der einzige Meilenstein, der den Altbestand berührt. Aufwand: **3–5 Tage** (d
 | **M0.6** | **Isolationsszene** | Leere Szene, nur das Eingabefeld, gespeist von einem Dummy-`IBoardDisplay`. Akzeptanz: läuft ohne **jede** Referenz auf Solver, Generator, Speichern, Timer, Schwierigkeit. Gegen die Aufnahme aus M0.1 prüfen und Timing nachjustieren. |
 | **M0.7** | **Haptik-Baseline** | Nice Vibrations auf einem **echten Android-Gerät** verifizieren (Emulator taugt nicht). Der alte Code vibrierte 1000 ms pro Tap — die Zielgröße für ein „Plop" sind 10–20 ms. |
 
-#### 5.1 Shot-Liste für die Referenzaufnahme (M0.1)
+#### 5.1 Referenz für die Eingabe — Entscheidung gegen die Bildschirmaufnahme
 
-Im Editor aufnehmen, 60 fps, eine Aufnahme von 45–90 s. Es geht um **Timing und Gefühl**, nicht um Bildqualität. Jede Interaktion einmal langsam, einmal in normalem Tempo:
+Die Spec (§12.2) fordert eine Bildschirmaufnahme als Vergleichsreferenz. **Bewusst verworfen.** Begründung: Der Zweck der Aufnahme ist, das Gefühl zu konservieren, falls das Original verschwindet — es verschwindet aber nicht. Der Prototyp ist als `prototype-v0` getaggt, auf GitHub gepusht und bleibt als lauffähiger Ordner liegen.
 
-1. Leere Zelle drücken, langsam in **vier verschiedene Richtungen** ziehen — zeigt, dass sich der Fächer an der Zugrichtung ausrichtet und danach stehen bleibt.
-2. Auf dem Bogen von 1 bis 9 durchwischen — zeigt Lens-Tracking und Elementabstände.
-3. Über den Schwellwert ziehen und **zurück zur Zelle** — der Abbruch-Weg.
-4. Schneller Flick auf eine bereits selektierte Zelle (der Fall, den der alte Code verschluckt).
-5. Element 0 („X", Löschen) wählen.
-6. Bereits selektierte Zelle kurz antippen → Deselect.
-7. Feste Zelle (Given) drücken → kein Menü.
-8. Beide Lens-Modi (`LensFixed` an/aus, Settings-Toggle im Spiel).
-9. Zum Schluss: das Auf- und Zublenden des Menüs mehrfach hintereinander — dafür ist die Aufnahme eigentlich da.
+Stattdessen zwei Referenzen, die zusammen genauer und billiger sind:
 
-Ablage **außerhalb des Repos** (z. B. `D:\Projects\_reference\`) — ein Video gehört nicht in die Versionierung.
+1. **Zahlen aus der Quelle.** Keyframes, Dauern und Stagger-Offsets werden direkt aus `Assets/Animations/Floating Lens/*.anim` und den serialisierten Prefab-Werten gelesen und in §3.2 dieses Dokuments festgehalten. Das ist präziser als jede Abfilmung, weil es die Quelle selbst ist.
+2. **Live-A/B in M0.4.** Alter Prototyp und Neubau nebeneinander starten und mit der eigenen Hand vergleichen. Interaktiv und wiederholbar — einem Video überlegen.
+
+> **Bedingung, die daraus folgt:** `D:\Projects\SudokuWorld` bleibt lauffähig, bis M0.4 abgenommen ist. Nicht löschen. Der `Vibration`-Fix (`3c24494`) muss beim nächsten Öffnen einmal auf saubere Kompilierung geprüft werden.
+
+#### 5.2 Bekannte Umgebungshürde: Burst vs. Windows Defender
+
+Beide Projekte melden `Unable to load the unmanaged library …\Library\BurstCache\JIT\<hash>.dll, error code 4551`. Die betroffene DLL ist 4096 Bytes groß, während alle anderen im selben Cache valide 12–38 KB haben — der Echtzeit-Scanner greift die Datei zwischen Schreiben und Laden ab.
+
+Burst wird in diesem Projekt **nicht gebraucht** (im Prototyp sitzt ein wirkungsloses `[BurstCompile]` auf `SudokuGenerator`, im Neuprojekt ist es nur transitive Abhängigkeit). Lösung in dieser Reihenfolge: `Jobs ▸ Burst ▸ Enable Compilation` im Editor aus; nur bei Bedarf Defender-Ausschluss auf `D:\Projects\*\Library` und den Editor-Installationsordner — bewusst nicht auf `D:\Projects` insgesamt, damit die Projektquellen weiter gescannt werden.
 
 **Die eine Regel, die M0 trägt:** Die Eingabeoberfläche entscheidet **niemals**, ob eine Eingabe zulässig ist. Sie meldet einen `InputIntent`; `PuzzleSession` entscheidet und schickt einen aktualisierten `IBoardDisplay` zurück. Im Prototyp ist das anders gelöst — genau das muss raus, sonst sind Hints, Undo und Fehlerzählung später nicht sauber baubar.
 
