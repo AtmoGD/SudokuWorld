@@ -94,3 +94,24 @@ crashlytics-build.properties
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/unity,visualstudiocode
+
+### Projektspezifisch ###
+
+# Laufzeit-Speicherstand. Entsteht durch den relativen Pfad in
+# Game.cs (saveFileName) und landet deshalb im Projekt-Root.
+game.sudoku
+
+# Neues Solution-Format, von *.sln oben nicht erfasst
+*.slnx
+
+# Rider
+.idea/
+
+# Signing und Backend-Secrets - duerfen nie ins Repo
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# macOS
+.DS_Store
