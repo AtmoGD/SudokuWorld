@@ -228,13 +228,29 @@ Der einzige Meilenstein, der den Altbestand berührt. Aufwand: **3–5 Tage** (d
 
 | # | Sub-Task | Ergebnis |
 |---|---|---|
-| **M0.1** | **Bestand sichern** | Upgrade-Diff committen (32 modifiziert + 5 untrackt liegen ungesichert), `game.sudoku` untracken, Tag `prototype-v0` setzen. **Bildschirmaufnahme der funktionierenden Eingabe**, 30–60 s, alle Interaktionen — das ist die Referenz, gegen die der Port geprüft wird. Ohne sie merkt man erst Wochen später, dass eine Animation 80 ms zu träge ist. Voraussetzung: Der NRE-Bug in `Vibration.cs` muss dafür einmalig entschärft werden, sonst läuft nichts. |
-| **M0.2** | **Neues Projekt** | Unity-Version fixieren (→ §7 D-A), 2D-URP-Template, Struktur §4.1, alle `asmdef`s leer angelegt, `.gitignore` ergänzt (`.idea/`, `*.slnx`, `*.keystore`, `*.jks`, `google-services.json`, `GoogleService-Info.plist`), neues Repo. Ungenutzte Packages **nicht** mitnehmen (ai.assistant, ai.inference, multiplayer.center, visualscripting, timeline, collab-proxy). Input System statt Legacy. |
+| **M0.1** | **Bestand sichern** — *teilweise erledigt* | ✅ Upgrade-Diff als ein Block committet (`2723059`) · ✅ `game.sudoku` untrackt, `.gitignore` um Secrets/`*.slnx`/`.idea` ergänzt (`c320fdf`) · ✅ NRE in `Vibration.cs` an der Ursache behoben (`3c24494`) · ✅ Tag `prototype-v0` gesetzt und gepusht.<br>⬜ **Offen: Kompilierprüfung** des Fixes im Editor.<br>⬜ **Offen: Bildschirmaufnahme der Eingabe** (Shot-Liste in §5.1) — die Referenz, gegen die M0.4 abgenommen wird. Ohne sie merkt man erst Wochen später, dass eine Animation 80 ms zu träge geworden ist. |
+| **M0.2** | **Neues Projekt** | Unity-Version fixieren (→ §7 D-A), 2D-URP-Template, Struktur §4.1, alle `asmdef`s leer angelegt, `.gitignore` ergänzt (`.idea/`, `*.slnx`, `*.keystore`, `*.jks`, `google-services.json`, `GoogleService-Info.plist`), neues Repo. Ungenutzte Packages **nicht** mitnehmen (ai.assistant, ai.inference, multiplayer.center, visualscripting, timeline, collab-proxy). Input System statt Legacy. Zusätzlich `.gitattributes` mit `* text=auto` und Binär-Markern anlegen — der Altbestand erzeugt bei jedem `git add` LF/CRLF-Warnungen, das will man im neuen Repo nicht wieder haben. |
 | **M0.3** | **Asset-Transfer** | Dark UI + Sprite Atlas, Odin Rounded ohne Web-Font-Reste, die zwei Sprites. Sorting Layers und Quality Tiers anlegen (aktuell: 1 Sorting Layer, 6 Quality-Stufen ohne URP-Zuordnung — effektiv eine einzige Stufe). |
 | **M0.4** | **`RadialValuePicker` neu bauen** | Die ~95 Zeilen Mechanik, N-agnostisch. Sechs Änderungen: (1) Ziel ist `RectTransform` + `Action<int>` statt `GameField`; (2) `stepSize` → `totalArc/(n−1)`, damit der Bogen bei jedem N gleich breit bleibt; (3) Elemente zur Laufzeit instanziieren statt 10 von Hand im Prefab; (4) `/1800` → `CanvasScaler.referenceResolution` lesen; (5) `eventData.position` + `pointerId` statt `Input.mousePosition` (Multitouch); (6) Animator → Code-Tween. **Drei Bugs beim Port fixen**, sonst wandern sie mit: fehlendes `return` in `PointerUp` (verschluckt schnelle Flicks), `inputDirection` wird bei PointerUp nicht zurückgesetzt, kein Multitouch. |
 | **M0.5** | **Juice-Fundament** | `GameEvent`-Contract in `Domain`, `FeedbackRouter` + Feel in `Puzzle.Feedback`, Event→Feedback-Mapping als ScriptableObject. Die Show/Hide-Animation der Eingabe als MMFeedbacks-Kette mit Code-Stagger nachbauen (Referenz: 0.4166 s, Scale 0 → 1.1 → 1.0, versetzte Starts). |
 | **M0.6** | **Isolationsszene** | Leere Szene, nur das Eingabefeld, gespeist von einem Dummy-`IBoardDisplay`. Akzeptanz: läuft ohne **jede** Referenz auf Solver, Generator, Speichern, Timer, Schwierigkeit. Gegen die Aufnahme aus M0.1 prüfen und Timing nachjustieren. |
 | **M0.7** | **Haptik-Baseline** | Nice Vibrations auf einem **echten Android-Gerät** verifizieren (Emulator taugt nicht). Der alte Code vibrierte 1000 ms pro Tap — die Zielgröße für ein „Plop" sind 10–20 ms. |
+
+#### 5.1 Shot-Liste für die Referenzaufnahme (M0.1)
+
+Im Editor aufnehmen, 60 fps, eine Aufnahme von 45–90 s. Es geht um **Timing und Gefühl**, nicht um Bildqualität. Jede Interaktion einmal langsam, einmal in normalem Tempo:
+
+1. Leere Zelle drücken, langsam in **vier verschiedene Richtungen** ziehen — zeigt, dass sich der Fächer an der Zugrichtung ausrichtet und danach stehen bleibt.
+2. Auf dem Bogen von 1 bis 9 durchwischen — zeigt Lens-Tracking und Elementabstände.
+3. Über den Schwellwert ziehen und **zurück zur Zelle** — der Abbruch-Weg.
+4. Schneller Flick auf eine bereits selektierte Zelle (der Fall, den der alte Code verschluckt).
+5. Element 0 („X", Löschen) wählen.
+6. Bereits selektierte Zelle kurz antippen → Deselect.
+7. Feste Zelle (Given) drücken → kein Menü.
+8. Beide Lens-Modi (`LensFixed` an/aus, Settings-Toggle im Spiel).
+9. Zum Schluss: das Auf- und Zublenden des Menüs mehrfach hintereinander — dafür ist die Aufnahme eigentlich da.
+
+Ablage **außerhalb des Repos** (z. B. `D:\Projects\_reference\`) — ein Video gehört nicht in die Versionierung.
 
 **Die eine Regel, die M0 trägt:** Die Eingabeoberfläche entscheidet **niemals**, ob eine Eingabe zulässig ist. Sie meldet einen `InputIntent`; `PuzzleSession` entscheidet und schickt einen aktualisierten `IBoardDisplay` zurück. Im Prototyp ist das anders gelöst — genau das muss raus, sonst sind Hints, Undo und Fehlerzählung später nicht sauber baubar.
 
